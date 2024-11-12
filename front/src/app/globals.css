@@ -33,6 +33,89 @@ button {
   cursor: pointer;
 }
 
+select {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  background-color: inherit;
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 5px;
+  padding: 10px;
+  font-size: 16px;
+  font-family: inherit;
+  cursor: pointer;
+  width: 100%;
+  transition: border-color 0.2s;
+}
+
+select:focus {
+  border-color: #81b64c;
+  outline: none;
+}
+
+/* Font Awesome arrow icon */
+.select-arrow {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  pointer-events: none; /* Prevents interfering with select interaction */
+  transition: transform 0.3s;
+  color: white;
+}
+
+/* Rotate arrow when select container has "open" class */
+.selectContainer.open .select-arrow {
+  transform: translateY(-50%) rotate(180deg); /* Flip arrow when open */
+}
+
+/* Option styling */
+option {
+  background-color: #262522;
+  color: white;
+  border: none;
+  padding: 10px;
+}
+
+/* Option hover effect */
+option:hover {
+  background-color: #81b64c;
+  color: white;
+}
+
+#theme-select {
+  margin-left: 10px;
+}
+#count-input {
+  margin-left: 10px;
+  background-color: #262522; /* Same dark background as parent */
+  color: white; /* White text */
+  border: 1px solid rgba(255, 255, 255, 0.2); /* Light border */
+  border-radius: 5px; /* Rounded corners */
+  padding: 8px;
+  font-size: 16px;
+  font-family: inherit;
+  width: 60px; /* Adjust width as needed */
+  text-align: center; /* Center text for a cleaner look */
+  transition: border-color 0.2s;
+}
+
+#count-input:focus {
+  border-color: #81b64c; /* Green border on focus */
+  outline: none; /* Remove outline on focus */
+}
+
+#count-input::-webkit-inner-spin-button,
+#count-input::-webkit-outer-spin-button {
+  -webkit-appearance: none; /* Hide default number input arrows in WebKit browsers */
+  margin: 0; /* Remove margin */
+}
+
+label {
+  margin-bottom: 15px;
+}
+
 form {
   display: flex;
   flex-direction: column;
@@ -40,9 +123,9 @@ form {
 }
 
 .puzzle-appending-box {
-  margin-top: 20px;
   display: flex;
   justify-content: center;
+  margin-bottom: 10px;
 }
 
 * {

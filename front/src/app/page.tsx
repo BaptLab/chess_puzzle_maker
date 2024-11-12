@@ -1,11 +1,12 @@
 "use client"; // Add this line at the top
 
 import { fetchPuzzles } from "@/api/puzzleApi"; // Ensure the import path is correct
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Puzzle } from "@/interfaces/Puzzle";
 import ChessboardComponent from "../services/chessboardGenerator";
 import { generatePuzzlesPdf } from "@/services/generatePuzzlesPdf";
 import styles from "./page.module.css";
+import "@fortawesome/fontawesome-free/css/all.min.css"; // Import Font Awesome CSS
 
 const Home = () => {
   const [theme, setTheme] = useState<string>("Divers");
@@ -15,26 +16,84 @@ const Home = () => {
   const [puzzles, setPuzzles] = useState<Puzzle[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
 
-  // Ref for the 'puzzle-appending-box' div
+  const selectContainerRef = useRef<HTMLDivElement>(null); // Ref for the select container
   const puzzleAppendingBoxRef =
-    useRef<HTMLDivElement>(null);
+    useRef<HTMLDivElement>(null); // Ref for the 'puzzle-appending-box' div
 
-  const themes = [
-    "Divers",
-    "Checkmate",
-    "Fork",
-    "Pin",
-    "Skewer",
-  ]; // Example themes
+  // Example themes with duplicates removed
+  const themes = Array.from(
+    new Set([
+      "Divers",
+      "crushing",
+      "fork",
+      "middlegame",
+      "short",
+      "kingsideAttack",
+      "mate",
+      "mateIn1",
+      "oneMove",
+      "endgame",
+      "master",
+      "mateIn2",
+      "backRankMate",
+      "advantage",
+      "discoveredAttack",
+      "pinnedPiece",
+      "pawnEndgame",
+      "rookEndgame",
+      "defensiveMove",
+      "long",
+      "deflection",
+    ])
+  );
 
-  // Handle form submission and PDF generation
+  useEffect(() => {
+    const toggleSelectArrow = () => {
+      if (selectContainerRef.current) {
+        selectContainerRef.current.classList.toggle("open");
+      }
+    };
+
+    const removeSelectArrow = () => {
+      if (selectContainerRef.current) {
+        selectContainerRef.current.classList.remove("open");
+      }
+    };
+
+    const selectElement =
+      selectContainerRef.current?.querySelector("select");
+
+    if (selectElement) {
+      selectElement.addEventListener(
+        "click",
+        toggleSelectArrow
+      );
+      selectElement.addEventListener(
+        "blur",
+        removeSelectArrow
+      );
+    }
+
+    return () => {
+      if (selectElement) {
+        selectElement.removeEventListener(
+          "click",
+          toggleSelectArrow
+        );
+        selectElement.removeEventListener(
+          "blur",
+          removeSelectArrow
+        );
+      }
+    };
+  }, []);
+
   const handleSubmit = async (
     e: React.FormEvent<HTMLFormElement>
   ) => {
     e.preventDefault();
     setLoading(true);
 
-    // Fetch puzzles directly
     const data = await fetchPuzzles(
       theme,
       minRating,
@@ -46,7 +105,6 @@ const Home = () => {
     setLoading(false);
 
     if (data.length > 0) {
-      // Pass the 'puzzle-appending-box' ref to `generatePuzzlesPdf`
       generatePuzzlesPdf(
         data,
         theme,
@@ -63,20 +121,27 @@ const Home = () => {
         <h1>Chess Puzzle Maker</h1>
         <form onSubmit={handleSubmit}>
           <label>
-            Theme:
-            <select
-              value={theme}
-              onChange={(e) => setTheme(e.target.value)}
+            Theme :
+            <div
+              className={styles.selectContainer}
+              ref={selectContainerRef}
             >
-              {themes.map((t) => (
-                <option key={t} value={t}>
-                  {t}
-                </option>
-              ))}
-            </select>
+              <select
+                value={theme}
+                onChange={(e) => setTheme(e.target.value)}
+                id="theme-select"
+              >
+                {themes.map((t) => (
+                  <option key={t} value={t}>
+                    {t}
+                  </option>
+                ))}
+              </select>
+              <i className="fas fa-chevron-down select-arrow"></i>
+            </div>
           </label>
           <label>
-            Minimum Rating:
+            Minimum Rating : {minRating}
             <input
               type="range"
               min="1"
@@ -87,10 +152,9 @@ const Home = () => {
                 setMinRating(parseInt(e.target.value))
               }
             />
-            {minRating}
           </label>
           <label>
-            Maximum Rating:
+            Maximum Rating : {maxRating}
             <input
               type="range"
               min="1"
@@ -101,20 +165,19 @@ const Home = () => {
                 setMaxRating(parseInt(e.target.value))
               }
             />
-            {maxRating}
           </label>
           <label>
-            Count:
+            Count :
             <input
               type="number"
               value={count}
               onChange={(e) =>
                 setCount(parseInt(e.target.value))
               }
+              id="count-input"
             />
           </label>
 
-          {/* Puzzle appending box where chessboards will be temporarily rendered */}
           <div
             ref={puzzleAppendingBoxRef}
             className="puzzle-appending-box"

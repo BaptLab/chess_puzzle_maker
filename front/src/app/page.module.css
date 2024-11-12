@@ -114,7 +114,7 @@ a.secondary {
 }
 
 .puzzleMenu h1 {
-  margin-bottom: 15px;
+  margin-bottom: 40px;
 }
 
 .puzzleMenu button {
@@ -191,7 +191,10 @@ a.secondary {
   border-radius: 5px;
   color: transparent; /* Hide default ticks in IE */
 }
-
+.selectContainer {
+  position: relative;
+  display: inline-block;
+}
 /* Add focus style for accessibility */
 .puzzleMenu input[type="range"]:focus {
   outline: none;
