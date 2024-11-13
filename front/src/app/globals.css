@@ -84,6 +84,12 @@ option:hover {
   color: white;
 }
 
+/* Set a custom color for the checkbox and radio button when checked */
+input[type="checkbox"],
+input[type="radio"] {
+  accent-color: #81b64c; /* Use any color you like */
+}
+
 #theme-select {
   margin-left: 10px;
 }

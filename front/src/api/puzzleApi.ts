@@ -1,9 +1,7 @@
-// src/api/puzzleApi.ts
-
 import { Puzzle } from "../interfaces/Puzzle";
 import { Chess } from "chess.js"; // Import chess.js to handle moves
 
-const API_URL = "http://localhost:8080/api/puzzles"; // Ensure the correct URL
+const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 export const fetchPuzzles = async (
   theme: string | undefined,
@@ -11,14 +9,30 @@ export const fetchPuzzles = async (
   maxRating: number | undefined,
   count: number | undefined
 ): Promise<Puzzle[]> => {
+  console.log(
+    "Fetching puzzles from:",
+    `${API_URL}?count=${count}&theme=${theme}&minRating=${minRating}&maxRating=${maxRating}`
+  );
+
   try {
     const response = await fetch(
       `${API_URL}?count=${count}&theme=${theme}&minRating=${minRating}&maxRating=${maxRating}`
     );
+
+    console.log("Response status:", response.status);
+    console.log("Response headers:", response.headers);
     if (!response.ok) {
       throw new Error("Failed to fetch puzzles");
     }
-    const puzzles: Puzzle[] = await response.json();
+
+    const jsonResponse = await response.json();
+    console.log("JSON response:", jsonResponse);
+
+    if (jsonResponse.status !== "success") {
+      throw new Error("Unexpected API response");
+    }
+
+    const puzzles: Puzzle[] = jsonResponse.data;
 
     puzzles.forEach((puzzle) => {
       const chess = new Chess(puzzle.fen);
@@ -40,21 +54,20 @@ export const fetchPuzzles = async (
 
       // Check if Black is to move first
       if (chess.turn() === "b") {
-        // Black starts: `1... BlackMove`
         const result = chess.move(moves[1]);
         if (result) {
           solutionMoves.push(`1... ${result.san}`);
-          moveNumber = 2; // Prepare for `2.` for White’s response
+          moveNumber = 2;
         }
         moves.slice(2).forEach((move, index) => {
           const result = chess.move(move);
           if (result) {
             const notation =
               index % 2 === 0
-                ? `${moveNumber}.${result.san}` // White’s move
-                : result.san; // Black’s move without numbering
+                ? `${moveNumber}.${result.san}`
+                : result.san;
             solutionMoves.push(notation);
-            if (index % 2 !== 0) moveNumber++; // Increment after each Black move
+            if (index % 2 !== 0) moveNumber++;
           }
         });
       } else {
@@ -64,10 +77,10 @@ export const fetchPuzzles = async (
           if (result) {
             const notation =
               index % 2 === 0
-                ? `${moveNumber}.${result.san}` // White’s move with move number
-                : result.san; // Black’s move without numbering
+                ? `${moveNumber}.${result.san}`
+                : result.san;
             solutionMoves.push(notation);
-            if (index % 2 !== 0) moveNumber++; // Increment after each Black move
+            if (index % 2 !== 0) moveNumber++;
           }
         });
       }
@@ -78,7 +91,10 @@ export const fetchPuzzles = async (
 
     return puzzles;
   } catch (error) {
-    console.error(error);
+    console.error(
+      `Error fetching puzzles from ${API_URL}:`,
+      error
+    );
     return [];
   }
 };

@@ -1,5 +1,3 @@
-// src/services/generatePuzzlesPdf.ts
-
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
 import { Puzzle } from "@/interfaces/Puzzle";
@@ -8,7 +6,9 @@ import { Chessboard2 } from "@chrisoakman/chessboard2/dist/chessboard2.min.mjs";
 export const generatePuzzlesPdf = async (
   puzzles: Puzzle[],
   theme: string,
-  puzzleAppendingBox: HTMLElement | null
+  puzzleAppendingBox: HTMLElement | null,
+  displayRating: boolean, // Parameter for displaying rating
+  displayCoordinates: boolean // Parameter for displaying coordinates
 ) => {
   if (!puzzleAppendingBox) return;
 
@@ -23,6 +23,27 @@ export const generatePuzzlesPdf = async (
   const totalPages = Math.ceil(
     puzzles.length / maxProblemsPerPage
   );
+
+  const leftCoordinates = [
+    "8",
+    "7",
+    "6",
+    "5",
+    "4",
+    "3",
+    "2",
+    "1",
+  ];
+  const bottomCoordinates = [
+    "a",
+    "b",
+    "c",
+    "d",
+    "e",
+    "f",
+    "g",
+    "h",
+  ];
 
   for (
     let pageIndex = 0;
@@ -51,11 +72,9 @@ export const generatePuzzlesPdf = async (
       const x = startX + col * cellWidth;
       const y = startY + row * cellHeight;
       const puzzleNumber =
-        pageIndex * maxProblemsPerPage + i + 1; // Puzzle ID to match with the solution
+        pageIndex * maxProblemsPerPage + i + 1;
 
-      // Clear previous chessboard from the puzzle appending box
       puzzleAppendingBox.innerHTML = "";
-
       const container = document.createElement("div");
       container.style.width = "200px";
       container.style.height = "200px";
@@ -71,7 +90,7 @@ export const generatePuzzlesPdf = async (
         draggable: false,
         dropOffBoard: "trash",
         sparePieces: true,
-        showNotation: true, // Ensure board notation is displayed
+        showNotation: false,
       });
       chessboard.setPosition(puzzle.fen);
 
@@ -86,24 +105,47 @@ export const generatePuzzlesPdf = async (
         const imgData = canvas.toDataURL("image/png");
         pdf.addImage(imgData, "PNG", x, y, 50, 50);
 
-        // Display puzzle number with a 20px offset to the right
+        // Display puzzle number on the right and bold
         pdf.setFontSize(10);
-        pdf.text(`${puzzleNumber}`, x - 4, y + 4);
+        pdf.setFont("helvetica", "bold");
+        pdf.text(`${puzzleNumber}`, x + 54, y + 4);
+
+        // Reset font to normal before rendering other elements
+        pdf.setFont("helvetica", "normal");
+
+        // Conditionally display rating based on displayRating parameter
+        if (displayRating) {
+          pdf.setFontSize(10);
+          pdf.text(
+            `Rating: ${puzzle.rating}`,
+            x + 15,
+            y + 60
+          );
+        }
 
         const whosToMove =
           puzzle.fen.split(" ")[1] === "w"
             ? "white"
             : "black";
         const dotX = x + 55;
-        const dotY = y + 5;
-        pdf.setLineWidth(0.5);
+        const dotY = y + 45;
+        pdf.setLineWidth(0.4);
         pdf.setDrawColor(0, 0, 0);
         pdf.setFillColor(
           whosToMove === "white" ? "#ffffff" : "#000000"
         );
         pdf.circle(dotX, dotY, 2, "FD");
 
-        pdf.text(`Rating: ${puzzle.rating}`, x, y + 55);
+        // Conditionally display coordinates based on displayCoordinates parameter
+        if (displayCoordinates) {
+          pdf.setFontSize(8);
+          leftCoordinates.forEach((num, index) => {
+            pdf.text(num, x - 5, y + 5 + index * 6.1);
+          });
+          bottomCoordinates.forEach((letter, index) => {
+            pdf.text(letter, x + 3 + index * 6.1, y + 54);
+          });
+        }
       });
 
       chessboard.clear();
@@ -127,7 +169,7 @@ export const generatePuzzlesPdf = async (
     const solutionText = `${index + 1}. ${
       puzzle.solution || "No solution available"
     }`;
-    const linePositionY = 30 + index * 10; // Position solutions with some spacing
+    const linePositionY = 30 + index * 10;
     pdf.text(solutionText, 15, linePositionY);
   });
 

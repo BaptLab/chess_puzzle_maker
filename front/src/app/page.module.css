@@ -16,6 +16,36 @@
   font-family: var(--font-geist-sans);
 }
 
+.puzzleCountRadioContainer label {
+  margin-right: 18px;
+}
+
+.puzzleCountRadioContainer input {
+  margin-right: 7px;
+}
+
+.ratingCheckboxLabel input {
+  margin-right: 10px;
+}
+
+.coordinateCheckboxLabel input {
+  margin-right: 10px;
+}
+.orderRadioLabel {
+  margin-top: 7px;
+}
+
+.orderRadioLabel input {
+  margin-right: 7px;
+}
+
+.orderRadioLabelContainer {
+  margin-top: 10px;
+}
+
+.orderRadioLabel label {
+  margin-right: 15px;
+}
 @media (prefers-color-scheme: dark) {
   .page {
     --gray-rgb: 255, 255, 255;

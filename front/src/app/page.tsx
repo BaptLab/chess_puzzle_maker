@@ -1,26 +1,33 @@
-"use client"; // Add this line at the top
+"use client";
 
-import { fetchPuzzles } from "@/api/puzzleApi"; // Ensure the import path is correct
+import { fetchPuzzles } from "@/api/puzzleApi";
 import { useState, useRef, useEffect } from "react";
 import { Puzzle } from "@/interfaces/Puzzle";
 import ChessboardComponent from "../services/chessboardGenerator";
 import { generatePuzzlesPdf } from "@/services/generatePuzzlesPdf";
 import styles from "./page.module.css";
-import "@fortawesome/fontawesome-free/css/all.min.css"; // Import Font Awesome CSS
+import "@fortawesome/fontawesome-free/css/all.min.css";
 
 const Home = () => {
   const [theme, setTheme] = useState<string>("Divers");
   const [minRating, setMinRating] = useState<number>(1);
   const [maxRating, setMaxRating] = useState<number>(3000);
-  const [count, setCount] = useState<number>(5);
+  const [count, setCount] = useState<number>(9);
   const [puzzles, setPuzzles] = useState<Puzzle[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
+  const [countOption, setCountOption] =
+    useState<string>("9");
+  const [displayRating, setDisplayRating] =
+    useState<boolean>(true);
+  const [displayCoordinates, setDisplayCoordinates] =
+    useState<boolean>(true); // New state for displaying coordinates
+  const [sortOrder, setSortOrder] =
+    useState<string>("lowToHigh"); // New state for sorting order
 
-  const selectContainerRef = useRef<HTMLDivElement>(null); // Ref for the select container
+  const selectContainerRef = useRef<HTMLDivElement>(null);
   const puzzleAppendingBoxRef =
-    useRef<HTMLDivElement>(null); // Ref for the 'puzzle-appending-box' div
+    useRef<HTMLDivElement>(null);
 
-  // Example themes with duplicates removed
   const themes = Array.from(
     new Set([
       "Divers",
@@ -46,7 +53,6 @@ const Home = () => {
       "deflection",
     ])
   );
-
   useEffect(() => {
     const toggleSelectArrow = () => {
       if (selectContainerRef.current) {
@@ -87,20 +93,34 @@ const Home = () => {
       }
     };
   }, []);
-
   const handleSubmit = async (
     e: React.FormEvent<HTMLFormElement>
   ) => {
     e.preventDefault();
     setLoading(true);
 
-    const data = await fetchPuzzles(
+    const finalCount =
+      countOption === "custom"
+        ? count
+        : parseInt(countOption);
+
+    let data = await fetchPuzzles(
       theme,
       minRating,
       maxRating,
-      count
+      finalCount
     );
     console.log("Fetched puzzles:", data);
+
+    // Sort puzzles based on selected sortOrder
+    if (sortOrder === "lowToHigh") {
+      data.sort((a, b) => a.rating - b.rating);
+    } else if (sortOrder === "highToLow") {
+      data.sort((a, b) => b.rating - a.rating);
+    } else if (sortOrder === "random") {
+      data = data.sort(() => Math.random() - 0.5);
+    }
+
     setPuzzles(data);
     setLoading(false);
 
@@ -108,8 +128,10 @@ const Home = () => {
       generatePuzzlesPdf(
         data,
         theme,
-        puzzleAppendingBoxRef.current
-      );
+        puzzleAppendingBoxRef.current,
+        displayRating,
+        displayCoordinates
+      ); // Pass displayCoordinates
     } else {
       alert("No puzzles to generate PDF.");
     }
@@ -120,6 +142,7 @@ const Home = () => {
       <div className={styles.puzzleMenu}>
         <h1>Chess Puzzle Maker</h1>
         <form onSubmit={handleSubmit}>
+          {/* Theme Selection */}
           <label>
             Theme :
             <div
@@ -140,6 +163,8 @@ const Home = () => {
               <i className="fas fa-chevron-down select-arrow"></i>
             </div>
           </label>
+
+          {/* Rating Range */}
           <label>
             Minimum Rating : {minRating}
             <input
@@ -166,18 +191,140 @@ const Home = () => {
               }
             />
           </label>
+
+          {/* Count Options */}
           <label>
-            Count :
-            <input
-              type="number"
-              value={count}
-              onChange={(e) =>
-                setCount(parseInt(e.target.value))
-              }
-              id="count-input"
-            />
+            Number of Puzzles :
+            <div
+              className={styles.puzzleCountRadioContainer}
+            >
+              <label>
+                <input
+                  type="radio"
+                  name="countOption"
+                  value="9"
+                  checked={countOption === "9"}
+                  onChange={() => {
+                    setCountOption("9");
+                    setCount(9);
+                  }}
+                />
+                9
+              </label>
+              <label>
+                <input
+                  type="radio"
+                  name="countOption"
+                  value="18"
+                  checked={countOption === "18"}
+                  onChange={() => {
+                    setCountOption("18");
+                    setCount(18);
+                  }}
+                />
+                18
+              </label>
+              <label>
+                <input
+                  type="radio"
+                  name="countOption"
+                  value="27"
+                  checked={countOption === "27"}
+                  onChange={() => {
+                    setCountOption("27");
+                    setCount(27);
+                  }}
+                />
+                27
+              </label>
+              <label>
+                <input
+                  type="radio"
+                  name="countOption"
+                  value="custom"
+                  checked={countOption === "custom"}
+                  onChange={() => setCountOption("custom")}
+                />
+                Custom
+                <input
+                  type="number"
+                  value={count}
+                  onChange={(e) =>
+                    setCount(parseInt(e.target.value))
+                  }
+                  disabled={countOption !== "custom"}
+                  id="count-input"
+                  style={{
+                    marginLeft: "10px",
+                    width: "60px",
+                  }}
+                />
+              </label>
+            </div>
           </label>
 
+          {/* Display Rating Option */}
+          <label className={styles.ratingCheckboxLabel}>
+            <input
+              type="checkbox"
+              checked={displayRating}
+              onChange={(e) =>
+                setDisplayRating(e.target.checked)
+              }
+            />
+            Display Rating
+          </label>
+
+          {/* Display Coordinates Option */}
+          <label className={styles.coordinateCheckboxLabel}>
+            <input
+              type="checkbox"
+              checked={displayCoordinates}
+              onChange={(e) =>
+                setDisplayCoordinates(e.target.checked)
+              }
+            />
+            Display Coordinates
+          </label>
+
+          {/* Sorting Order Options */}
+          <label className={styles.orderRadioLabel}>
+            Order by Rating :
+            <div
+              className={styles.orderRadioLabelContainer}
+            >
+              <label>
+                <input
+                  type="radio"
+                  name="sortOrder"
+                  value="lowToHigh"
+                  checked={sortOrder === "lowToHigh"}
+                  onChange={() => setSortOrder("lowToHigh")}
+                />
+                Low to High
+              </label>
+              <label>
+                <input
+                  type="radio"
+                  name="sortOrder"
+                  value="highToLow"
+                  checked={sortOrder === "highToLow"}
+                  onChange={() => setSortOrder("highToLow")}
+                />
+                High to Low
+              </label>
+              <label>
+                <input
+                  type="radio"
+                  name="sortOrder"
+                  value="random"
+                  checked={sortOrder === "random"}
+                  onChange={() => setSortOrder("random")}
+                />
+                Random
+              </label>
+            </div>
+          </label>
           <div
             ref={puzzleAppendingBoxRef}
             className="puzzle-appending-box"
