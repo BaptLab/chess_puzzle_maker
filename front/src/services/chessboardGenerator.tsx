@@ -1,30 +1,33 @@
 import { useEffect, useRef } from "react";
-import "@chrisoakman/chessboard2/dist/chessboard2.min.css"; // Import CSS
-import { Chessboard2 } from "@chrisoakman/chessboard2/dist/chessboard2.min.mjs"; // Import Chessboard.js directly from dist
+import "@chrisoakman/chessboard2/dist/chessboard2.min.css"; // Chessboard.js styles
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
+import { Chessboard2 } from "@chrisoakman/chessboard2/dist/chessboard2.min.mjs"; // Chessboard.js module
 
 interface ChessboardComponentProps {
-  fen: string; // Define the prop type for FEN
-  id: string; // Define the prop type for the unique id
+  fen: string; // FEN string to set the initial board position
+  id: string; // Unique ID for each board instance
 }
 
 const ChessboardComponent: React.FC<
   ChessboardComponentProps
 > = ({ fen, id }) => {
-  const boardRef = useRef<Chessboard | null>(null); // Create a ref to hold the board instance
+  const boardRef = useRef<any | null>(null); // Ref to hold the chessboard instance
 
   useEffect(() => {
-    // Initialize the chessboard with the provided FEN string
+    // Initialize chessboard with FEN and configuration
     boardRef.current = Chessboard2(id, {
       draggable: false,
       dropOffBoard: "trash",
       sparePieces: true,
     });
-    boardRef.current.setPosition(fen); // Set the initial position using the FEN
+    boardRef.current.setPosition(fen); // Set initial position
 
+    // Cleanup the chessboard instance on unmount
     return () => {
-      boardRef.current?.destroy(); // Cleanup on unmount
+      boardRef.current?.destroy();
     };
-  }, [fen, id]); // Re-run effect if fen or id prop changes
+  }, [fen, id]); // Reinitialize if fen or id changes
 
   return (
     <div>

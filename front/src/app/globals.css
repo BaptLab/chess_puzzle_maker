@@ -47,8 +47,11 @@ select {
   cursor: pointer;
   width: 100%;
   transition: border-color 0.2s;
+  margin-left: 7px;
 }
-
+select option[value=""][disabled] {
+  color: grey;
+}
 select:focus {
   border-color: #81b64c;
   outline: none;

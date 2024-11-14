@@ -15,9 +15,9 @@ export const generatePuzzlesPdf = async (
   const pdf = new jsPDF("p", "mm", "a4");
   const maxProblemsPerPage = 9;
   const cellWidth = 65;
-  const cellHeight = 80;
+  const cellHeight = 88;
   const startX = 15;
-  const startY = 30;
+  const startY = 40;
   const pageWidth = pdf.internal.pageSize.getWidth();
   const pageHeight = pdf.internal.pageSize.getHeight();
   const totalPages = Math.ceil(
@@ -117,7 +117,7 @@ export const generatePuzzlesPdf = async (
         if (displayRating) {
           pdf.setFontSize(10);
           pdf.text(
-            `Rating: ${puzzle.rating}`,
+            `Difficulté : ${puzzle.rating}`,
             x + 15,
             y + 60
           );
@@ -165,12 +165,31 @@ export const generatePuzzlesPdf = async (
   pdf.text("Solutions", pageWidth / 2 - 10, 15);
 
   pdf.setFontSize(12);
+  const columnLimit = 22; // Switch to the right column after 25 solutions
+  const lineHeight = 12; // Increase line height for more vertical spacing
+  const leftColumnX = 15; // X position for the left column
+  const rightColumnX = pageWidth / 2 + 10; // X position for the right column
+  const maxLineWidth = pageWidth / 2 - 20; // Maximum width for wrapping text
+
   puzzles.forEach((puzzle, index) => {
     const solutionText = `${index + 1}. ${
       puzzle.solution || "No solution available"
     }`;
-    const linePositionY = 30 + index * 10;
-    pdf.text(solutionText, 15, linePositionY);
+
+    // Determine the x and y positions based on the index
+    const xPosition =
+      index < columnLimit ? leftColumnX : rightColumnX;
+    const yPosition =
+      30 + (index % columnLimit) * lineHeight;
+
+    // Split text to wrap within the max line width
+    const wrappedText = pdf.splitTextToSize(
+      solutionText,
+      maxLineWidth
+    );
+
+    // Render the wrapped text
+    pdf.text(wrappedText, xPosition, yPosition);
   });
 
   const pdfBlobUrl = pdf.output("bloburl");

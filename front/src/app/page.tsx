@@ -9,7 +9,8 @@ import styles from "./page.module.css";
 import "@fortawesome/fontawesome-free/css/all.min.css";
 
 const Home = () => {
-  const [theme, setTheme] = useState<string>("Divers");
+  // State to store selected themes, starting with one "Divers" theme
+  const [themes, setThemes] = useState<string[]>([""]);
   const [minRating, setMinRating] = useState<number>(1);
   const [maxRating, setMaxRating] = useState<number>(3000);
   const [count, setCount] = useState<number>(9);
@@ -20,40 +21,97 @@ const Home = () => {
   const [displayRating, setDisplayRating] =
     useState<boolean>(true);
   const [displayCoordinates, setDisplayCoordinates] =
-    useState<boolean>(true); // New state for displaying coordinates
+    useState<boolean>(true);
   const [sortOrder, setSortOrder] =
-    useState<string>("lowToHigh"); // New state for sorting order
+    useState<string>("lowToHigh");
 
   const selectContainerRef = useRef<HTMLDivElement>(null);
   const puzzleAppendingBoxRef =
     useRef<HTMLDivElement>(null);
 
-  const themes = Array.from(
-    new Set([
-      "Divers",
-      "crushing",
-      "fork",
-      "middlegame",
-      "short",
-      "kingsideAttack",
-      "mate",
-      "mateIn1",
-      "oneMove",
-      "endgame",
-      "master",
-      "mateIn2",
-      "backRankMate",
-      "advantage",
-      "discoveredAttack",
-      "pinnedPiece",
-      "pawnEndgame",
-      "rookEndgame",
-      "defensiveMove",
-      "long",
-      "deflection",
-    ])
-  );
+  // Available themes for selection (translated to French)
+  const themeOptions = [
+    "divers",
+    "pion avancé",
+    "avantage",
+    "mat arabe",
+    "attaque F2F7",
+    "attraction",
+    "mat derrière",
+    "finale de fou",
+    "mat de Boden",
+    "prise défenseur",
+    "dégagement",
+    "écrasement",
+    "défense",
+    "déviation",
+    "attaque découverte",
+    "mat double fou",
+    "échec double",
+    "en passant",
+    "finale",
+    "égalité",
+    "roi exposé",
+    "fourchette",
+    "pièce en prise",
+    "mat crochet",
+    "interférence",
+    "intermezzo",
+    "attaque aile roi",
+    "finale de cavalier",
+    "long",
+    "maître",
+    "maître contre maître",
+    "mat",
+    "mat en 1",
+    "mat en 2",
+    "mat en 3",
+    "mat en 4",
+    "milieu de jeu",
+    "un coup",
+    "ouverture",
+    "finale de pions",
+    "clouage",
+    "promotion",
+    "finale de dame",
+    "finale de dame et tour",
+    "attaque aile dame",
+    "coup silencieux",
+    "finale de tour",
+    "sacrifice",
+    "court",
+    "enfilade",
+    "mat étouffé",
+    "super grand maître",
+    "pièce piégée",
+    "très long",
+    "rayon X",
+    "zugzwang",
+  ];
+
+  // Function to handle adding a new theme selection or updating an existing one
+  const addThemeSelect = (value: string, index: number) => {
+    const updatedThemes = [...themes];
+    updatedThemes[index] = value;
+
+    // If the last select has a value, add a new blank select
+    if (value && index === themes.length - 1) {
+      updatedThemes.push("");
+    }
+
+    setThemes(updatedThemes);
+  };
+
+  // Function to handle removing a theme selection
+  const removeThemeSelect = (index: number) => {
+    const updatedThemes = themes.filter(
+      (_, i) => i !== index
+    );
+    setThemes(updatedThemes);
+  };
+
   useEffect(() => {
+    // Toggle select arrow styling on focus and blur events
     const toggleSelectArrow = () => {
       if (selectContainerRef.current) {
         selectContainerRef.current.classList.toggle("open");
@@ -93,11 +151,24 @@ const Home = () => {
       }
     };
   }, []);
+
+  // Handle form submission for fetching and displaying puzzles
   const handleSubmit = async (
     e: React.FormEvent<HTMLFormElement>
   ) => {
     e.preventDefault();
     setLoading(true);
+
+    // Filter out any empty themes before submission
+    const selectedThemes = themes.filter(
+      (theme) => theme !== ""
+    );
+
+    if (selectedThemes.length === 0) {
+      alert("Please select at least one theme.");
+      setLoading(false);
+      return;
+    }
 
     const finalCount =
       countOption === "custom"
@@ -105,7 +176,7 @@ const Home = () => {
         : parseInt(countOption);
 
     let data = await fetchPuzzles(
-      theme,
+      selectedThemes, // Pass the array of selected themes
       minRating,
       maxRating,
       finalCount
@@ -124,14 +195,15 @@ const Home = () => {
     setPuzzles(data);
     setLoading(false);
 
+    // Generate PDF if puzzles are available, otherwise alert
     if (data.length > 0) {
       generatePuzzlesPdf(
         data,
-        theme,
+        selectedThemes.join(", "), // Join themes for PDF title
         puzzleAppendingBoxRef.current,
         displayRating,
         displayCoordinates
-      ); // Pass displayCoordinates
+      );
     } else {
       alert("No puzzles to generate PDF.");
     }
@@ -142,31 +214,75 @@ const Home = () => {
       <div className={styles.puzzleMenu}>
         <h1>Chess Puzzle Maker</h1>
         <form onSubmit={handleSubmit}>
-          {/* Theme Selection */}
-          <label>
-            Theme :
-            <div
-              className={styles.selectContainer}
-              ref={selectContainerRef}
+          {/* Multiple Theme selection dropdowns */}
+          {themes.map((theme, index) => (
+            <label
+              key={index}
+              style={{
+                display: "flex",
+                alignItems: "center",
+              }}
             >
-              <select
-                value={theme}
-                onChange={(e) => setTheme(e.target.value)}
-                id="theme-select"
+              {`Thème ${index + 1}`}
+              <div
+                className={styles.selectContainer}
+                ref={selectContainerRef}
+                style={{ marginLeft: "10px" }}
               >
-                {themes.map((t) => (
-                  <option key={t} value={t}>
-                    {t}
+                <select
+                  value={theme}
+                  onChange={(e) =>
+                    addThemeSelect(e.target.value, index)
+                  }
+                  style={{
+                    color: theme === "" ? "grey" : "white",
+                  }} // Greys out placeholder text
+                >
+                  <option value="" disabled hidden>
+                    Choisir un thème
                   </option>
-                ))}
-              </select>
-              <i className="fas fa-chevron-down select-arrow"></i>
-            </div>
-          </label>
+                  {/* Only allow "Divers" for the first select; filter it out for others */}
+                  {themeOptions
+                    .filter(
+                      (option) =>
+                        (index === 0 &&
+                          option === "divers") ||
+                        (option !== "divers" &&
+                          (!themes.includes(option) ||
+                            option === theme))
+                    )
+                    .map((t) => (
+                      <option key={t} value={t}>
+                        {t}
+                      </option>
+                    ))}
+                </select>
+                <i className="fas fa-chevron-down select-arrow"></i>
+              </div>
+              {/* Display 'X' button for selected themes only (not the first one if blank) */}
+              {index > 0 && theme && (
+                <button
+                  type="button"
+                  onClick={() => removeThemeSelect(index)}
+                  style={{
+                    marginLeft: "10px",
+                    paddingBottom: "18px",
+                    background: "transparent",
+                    border: "none",
+                    color: "red",
+                    fontSize: "16px",
+                    cursor: "pointer",
+                  }}
+                >
+                  ✕
+                </button>
+              )}
+            </label>
+          ))}
 
-          {/* Rating Range */}
+          {/* Rating range selectors */}
           <label>
-            Minimum Rating : {minRating}
+            Difficulté minimum : {minRating}
             <input
               type="range"
               min="1"
@@ -179,7 +295,7 @@ const Home = () => {
             />
           </label>
           <label>
-            Maximum Rating : {maxRating}
+            Difficulté maximum : {maxRating}
             <input
               type="range"
               min="1"
@@ -192,9 +308,9 @@ const Home = () => {
             />
           </label>
 
-          {/* Count Options */}
+          {/* Number of puzzles selection */}
           <label>
-            Number of Puzzles :
+            Nombre de problèmes :
             <div
               className={styles.puzzleCountRadioContainer}
             >
@@ -245,7 +361,7 @@ const Home = () => {
                   checked={countOption === "custom"}
                   onChange={() => setCountOption("custom")}
                 />
-                Custom
+                Personnalisé
                 <input
                   type="number"
                   value={count}
@@ -263,7 +379,7 @@ const Home = () => {
             </div>
           </label>
 
-          {/* Display Rating Option */}
+          {/* Display rating and coordinates options */}
           <label className={styles.ratingCheckboxLabel}>
             <input
               type="checkbox"
@@ -274,8 +390,6 @@ const Home = () => {
             />
             Display Rating
           </label>
-
-          {/* Display Coordinates Option */}
           <label className={styles.coordinateCheckboxLabel}>
             <input
               type="checkbox"
@@ -287,9 +401,9 @@ const Home = () => {
             Display Coordinates
           </label>
 
-          {/* Sorting Order Options */}
+          {/* Sorting order options */}
           <label className={styles.orderRadioLabel}>
-            Order by Rating :
+            Ordre de difficulté :
             <div
               className={styles.orderRadioLabelContainer}
             >
@@ -301,7 +415,7 @@ const Home = () => {
                   checked={sortOrder === "lowToHigh"}
                   onChange={() => setSortOrder("lowToHigh")}
                 />
-                Low to High
+                Croissant
               </label>
               <label>
                 <input
@@ -311,7 +425,7 @@ const Home = () => {
                   checked={sortOrder === "highToLow"}
                   onChange={() => setSortOrder("highToLow")}
                 />
-                High to Low
+                Décroissant
               </label>
               <label>
                 <input
@@ -321,16 +435,19 @@ const Home = () => {
                   checked={sortOrder === "random"}
                   onChange={() => setSortOrder("random")}
                 />
-                Random
+                Aléatoire
               </label>
             </div>
           </label>
+
           <div
             ref={puzzleAppendingBoxRef}
             className="puzzle-appending-box"
           ></div>
 
-          <button type="submit">Generate Puzzle</button>
+          <button type="submit">
+            Générer les problèmes
+          </button>
         </form>
         {loading && <p>Loading...</p>}
         <div>

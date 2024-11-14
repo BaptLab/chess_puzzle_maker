@@ -13,23 +13,20 @@ $db = $database->connect();
 $puzzleService = new PuzzleService($db);
 
 // Retrieve query parameters (with default values if not provided)
-$theme = $_GET['theme'] ?? null;
+$themes = isset($_GET['theme']) ? explode(",", $_GET['theme']) : null;
 $minRating = $_GET['minRating'] ?? 1;
 $maxRating = $_GET['maxRating'] ?? 3000;
 $count = $_GET['count'] ?? 5;
 
 try {
-    // Fetch puzzles from the service
-    $puzzles = $puzzleService->getRandomPuzzles($theme, $minRating, $maxRating, $count);
+    // Fetch puzzles with multiple themes
+    $puzzles = $puzzleService->getRandomPuzzles($themes, $minRating, $maxRating, $count);
     
-    // Return JSON response
     echo json_encode([
         'status' => 'success',
         'data' => $puzzles
     ]);
-
 } catch (Exception $e) {
-    // Handle any errors and return a JSON error message
     echo json_encode([
         'status' => 'error',
         'message' => $e->getMessage()
