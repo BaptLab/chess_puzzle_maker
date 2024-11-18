@@ -1,0 +1,49 @@
+name: Build and Deploy to FTP
+
+on:
+  push:
+    branches:
+      - main # Trigger on push to main branch
+
+jobs:
+  build-and-deploy:
+    name: Build and Deploy
+    runs-on: ubuntu-latest
+
+    steps:
+      # Step 1: Checkout Repository
+      - name: Checkout Repository
+        uses: actions/checkout@v2
+
+      # Step 2: Set up Node.js
+      - name: Set up Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: "18" # Update to Node.js 18, compatible with Next.js 14.2.12
+
+      # Step 3: Install Dependencies
+      - name: Install Dependencies
+        working-directory: ./front # Go to the 'front' directory
+        run: npm install
+
+      # Step 4: Build Project
+      - name: Build Frontend
+        working-directory: ./front # Go to the 'front' directory
+        run: npm run build
+
+      # Step 5: Deploy to FTP Server
+      - name: Upload Frontend and Backend to FTP Server
+        uses: SamKirkland/FTP-Deploy-Action@4.3.0
+        with:
+          server: ${{ secrets.FTP_SERVER }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          local-dir: ./ # Upload all necessary files
+          server-dir: ./www/chess_puzzle_maker/ # Specify the subdirectory for this site
+          exclude: |
+            **/node_modules/**
+            **/front/node_modules/**
+            **/.git/**
+            **/.github/**
+            **/*.log
+            front/.next/cache/** # Exclude build cache files

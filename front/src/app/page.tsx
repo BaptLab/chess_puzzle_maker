@@ -176,7 +176,7 @@ const Home = () => {
         : parseInt(countOption);
 
     let data = await fetchPuzzles(
-      selectedThemes, // Pass the array of selected themes
+      selectedThemes as unknown as string, // Pass the array of selected themes
       minRating,
       maxRating,
       finalCount
