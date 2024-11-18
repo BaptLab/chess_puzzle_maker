@@ -47,3 +47,5 @@ jobs:
             **/.github/**
             **/*.log
             front/.next/cache/** # Exclude build cache files
+            back/** # Exclude the 'back' folder
+            next/** # Exclude the empty 'next' folder
