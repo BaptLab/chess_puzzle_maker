@@ -388,7 +388,7 @@ const Home = () => {
                 setDisplayRating(e.target.checked)
               }
             />
-            Display Rating
+            Afficher le classement
           </label>
           <label className={styles.coordinateCheckboxLabel}>
             <input
@@ -398,7 +398,7 @@ const Home = () => {
                 setDisplayCoordinates(e.target.checked)
               }
             />
-            Display Coordinates
+            Afficher les coordonnées
           </label>
 
           {/* Sorting order options */}
@@ -445,7 +445,7 @@ const Home = () => {
             className="puzzle-appending-box"
           ></div>
 
-          <button type="submit">
+          <button id="generate-puzzle-btn" type="submit">
             Générer les problèmes
           </button>
         </form>

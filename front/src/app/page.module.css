@@ -291,3 +291,41 @@ a.secondary {
     filter: invert();
   }
 }
+@media (max-width: 767px) {
+  .puzzleMenu {
+    padding: 8%;
+    width: 100vw;
+    height: 100vh;
+    border-radius: inherit;
+    background-color: #262522;
+    box-shadow: inherit;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .puzzleCountRadioContainer {
+    flex-wrap: wrap;
+    display: flex;
+    margin-top: 10px;
+    align-items: center;
+  }
+  .orderRadioLabelContainer {
+    flex-wrap: wrap;
+    display: flex;
+  }
+  .mainContainer {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+  }
+  .chessboard-container {
+    width: 100%;
+    margin: auto;
+  }
+  .puzzle-appending-box {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+}

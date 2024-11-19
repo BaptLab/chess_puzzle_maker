@@ -153,3 +153,22 @@ a {
     color-scheme: dark;
   }
 }
+
+@media (max-width: 767px) {
+  #puzzle-generate-button {
+    margin-bottom: 50px;
+  }
+
+  body {
+    background-color: #262522;
+  }
+  .chessboard-container {
+    width: 100%;
+    margin: auto;
+  }
+  .puzzle-appending-box {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+}
