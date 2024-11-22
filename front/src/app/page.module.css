@@ -60,8 +60,7 @@
 .mainContainer {
   display: flex;
   align-items: center;
-  justify-content: center;
-  height: 100vh;
+  justify-content: space-between;
 }
 
 .main ol {
@@ -136,6 +135,7 @@ a.secondary {
 }
 
 .puzzleMenu {
+  margin-top: 100px;
   padding: 50px;
   border-radius: 25px;
   background-color: #262522;
@@ -145,8 +145,8 @@ a.secondary {
   flex-direction: column;
 }
 
-.puzzleMenu h1 {
-  margin-bottom: 40px;
+.puzzleMenu h2 {
+  margin-bottom: 30px;
   align-self: center;
 }
 
@@ -295,12 +295,13 @@ a.secondary {
   .puzzleMenu {
     padding: 8%;
     width: 100vw;
-    height: 100vh;
+    height: inherit;
     border-radius: inherit;
     background-color: #262522;
     box-shadow: inherit;
     display: flex;
     flex-direction: column;
+    margin-top: 20px;
   }
 
   .puzzleCountRadioContainer {
@@ -317,15 +318,6 @@ a.secondary {
     display: flex;
     align-items: center;
     justify-content: center;
-    height: 100vh;
-  }
-  .chessboard-container {
-    width: 100%;
-    margin: auto;
-  }
-  .puzzle-appending-box {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 10px;
+    height: inherit;
   }
 }

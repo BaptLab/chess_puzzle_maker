@@ -7,6 +7,8 @@ import ChessboardComponent from "../services/chessboardGenerator";
 import { generatePuzzlesPdf } from "@/services/generatePuzzlesPdf";
 import styles from "./page.module.css";
 import "@fortawesome/fontawesome-free/css/all.min.css";
+import Footer from "@/components/Footer/Footer";
+import Header from "@/components/header/Header";
 
 const Home = () => {
   // State to store selected themes, starting with one "Divers" theme
@@ -210,264 +212,277 @@ const Home = () => {
   };
 
   return (
-    <main className={styles.mainContainer}>
-      <div className={styles.puzzleMenu}>
-        <h1>Chess Puzzle Maker</h1>
-        <form onSubmit={handleSubmit}>
-          {/* Multiple Theme selection dropdowns */}
-          {themes.map((theme, index) => (
-            <label
-              key={index}
-              style={{
-                display: "flex",
-                alignItems: "center",
-              }}
-            >
-              {`Thème ${index + 1}`}
-              <div
-                className={styles.selectContainer}
-                ref={selectContainerRef}
-                style={{ marginLeft: "10px" }}
+    <>
+      <Header />
+      <main className={styles.mainContainer}>
+        <div className={styles.puzzleMenu}>
+          <h2>Sélectionnez vos paramètres</h2>
+          <form onSubmit={handleSubmit}>
+            {/* Multiple Theme selection dropdowns */}
+            {themes.map((theme, index) => (
+              <label
+                key={index}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                }}
               >
-                <select
-                  value={theme}
-                  onChange={(e) =>
-                    addThemeSelect(e.target.value, index)
-                  }
-                  style={{
-                    color: theme === "" ? "grey" : "white",
-                  }} // Greys out placeholder text
+                {`Thème ${index + 1}`}
+                <div
+                  className={styles.selectContainer}
+                  ref={selectContainerRef}
+                  style={{ marginLeft: "10px" }}
                 >
-                  <option value="" disabled hidden>
-                    Choisir un thème
-                  </option>
-                  {/* Only allow "Divers" for the first select; filter it out for others */}
-                  {themeOptions
-                    .filter(
-                      (option) =>
-                        (index === 0 &&
-                          option === "divers") ||
-                        (option !== "divers" &&
-                          (!themes.includes(option) ||
-                            option === theme))
-                    )
-                    .map((t) => (
-                      <option key={t} value={t}>
-                        {t}
-                      </option>
-                    ))}
-                </select>
-                <i className="fas fa-chevron-down select-arrow"></i>
-              </div>
-              {/* Display 'X' button for selected themes only (not the first one if blank) */}
-              {index > 0 && theme && (
-                <button
-                  type="button"
-                  onClick={() => removeThemeSelect(index)}
-                  style={{
-                    marginLeft: "10px",
-                    paddingBottom: "18px",
-                    background: "transparent",
-                    border: "none",
-                    color: "red",
-                    fontSize: "16px",
-                    cursor: "pointer",
-                  }}
-                >
-                  ✕
-                </button>
-              )}
-            </label>
-          ))}
+                  <select
+                    value={theme}
+                    onChange={(e) =>
+                      addThemeSelect(e.target.value, index)
+                    }
+                    style={{
+                      color:
+                        theme === "" ? "grey" : "white",
+                    }} // Greys out placeholder text
+                  >
+                    <option value="" disabled hidden>
+                      Choisir un thème
+                    </option>
+                    {/* Only allow "Divers" for the first select; filter it out for others */}
+                    {themeOptions
+                      .filter(
+                        (option) =>
+                          (index === 0 &&
+                            option === "divers") ||
+                          (option !== "divers" &&
+                            (!themes.includes(option) ||
+                              option === theme))
+                      )
+                      .map((t) => (
+                        <option key={t} value={t}>
+                          {t}
+                        </option>
+                      ))}
+                  </select>
+                  <i className="fas fa-chevron-down select-arrow"></i>
+                </div>
+                {/* Display 'X' button for selected themes only (not the first one if blank) */}
+                {index > 0 && theme && (
+                  <button
+                    type="button"
+                    onClick={() => removeThemeSelect(index)}
+                    style={{
+                      marginLeft: "10px",
+                      paddingBottom: "18px",
+                      background: "transparent",
+                      border: "none",
+                      color: "red",
+                      fontSize: "16px",
+                      cursor: "pointer",
+                    }}
+                  >
+                    ✕
+                  </button>
+                )}
+              </label>
+            ))}
 
-          {/* Rating range selectors */}
-          <label>
-            Difficulté minimum : {minRating}
-            <input
-              type="range"
-              min="1"
-              max="3001"
-              step="200"
-              value={minRating}
-              onChange={(e) =>
-                setMinRating(parseInt(e.target.value))
-              }
-            />
-          </label>
-          <label>
-            Difficulté maximum : {maxRating}
-            <input
-              type="range"
-              min="1"
-              max="3001"
-              step="200"
-              value={maxRating}
-              onChange={(e) =>
-                setMaxRating(parseInt(e.target.value))
-              }
-            />
-          </label>
-
-          {/* Number of puzzles selection */}
-          <label>
-            Nombre de problèmes :
-            <div
-              className={styles.puzzleCountRadioContainer}
-            >
-              <label>
-                <input
-                  type="radio"
-                  name="countOption"
-                  value="9"
-                  checked={countOption === "9"}
-                  onChange={() => {
-                    setCountOption("9");
-                    setCount(9);
-                  }}
-                />
-                9
-              </label>
-              <label>
-                <input
-                  type="radio"
-                  name="countOption"
-                  value="18"
-                  checked={countOption === "18"}
-                  onChange={() => {
-                    setCountOption("18");
-                    setCount(18);
-                  }}
-                />
-                18
-              </label>
-              <label>
-                <input
-                  type="radio"
-                  name="countOption"
-                  value="27"
-                  checked={countOption === "27"}
-                  onChange={() => {
-                    setCountOption("27");
-                    setCount(27);
-                  }}
-                />
-                27
-              </label>
-              <label>
-                <input
-                  type="radio"
-                  name="countOption"
-                  value="custom"
-                  checked={countOption === "custom"}
-                  onChange={() => setCountOption("custom")}
-                />
-                Personnalisé
-                <input
-                  type="number"
-                  value={count}
-                  onChange={(e) =>
-                    setCount(parseInt(e.target.value))
-                  }
-                  disabled={countOption !== "custom"}
-                  id="count-input"
-                  style={{
-                    marginLeft: "10px",
-                    width: "60px",
-                  }}
-                />
-              </label>
-            </div>
-          </label>
-
-          {/* Display rating and coordinates options */}
-          <label className={styles.ratingCheckboxLabel}>
-            <input
-              type="checkbox"
-              checked={displayRating}
-              onChange={(e) =>
-                setDisplayRating(e.target.checked)
-              }
-            />
-            Afficher le classement
-          </label>
-          <label className={styles.coordinateCheckboxLabel}>
-            <input
-              type="checkbox"
-              checked={displayCoordinates}
-              onChange={(e) =>
-                setDisplayCoordinates(e.target.checked)
-              }
-            />
-            Afficher les coordonnées
-          </label>
-
-          {/* Sorting order options */}
-          <label className={styles.orderRadioLabel}>
-            Ordre de difficulté :
-            <div
-              className={styles.orderRadioLabelContainer}
-            >
-              <label>
-                <input
-                  type="radio"
-                  name="sortOrder"
-                  value="lowToHigh"
-                  checked={sortOrder === "lowToHigh"}
-                  onChange={() => setSortOrder("lowToHigh")}
-                />
-                Croissant
-              </label>
-              <label>
-                <input
-                  type="radio"
-                  name="sortOrder"
-                  value="highToLow"
-                  checked={sortOrder === "highToLow"}
-                  onChange={() => setSortOrder("highToLow")}
-                />
-                Décroissant
-              </label>
-              <label>
-                <input
-                  type="radio"
-                  name="sortOrder"
-                  value="random"
-                  checked={sortOrder === "random"}
-                  onChange={() => setSortOrder("random")}
-                />
-                Aléatoire
-              </label>
-            </div>
-          </label>
-
-          <div
-            ref={puzzleAppendingBoxRef}
-            className="puzzle-appending-box"
-          ></div>
-
-          <button id="generate-puzzle-btn" type="submit">
-            Générer les problèmes
-          </button>
-        </form>
-        {loading && <p>Loading...</p>}
-        <div>
-          {puzzles.map((puzzle) => (
-            <div
-              key={puzzle.puzzleId}
-              style={{
-                marginBottom: "20px",
-                display: "none",
-              }}
-            >
-              <ChessboardComponent
-                fen={puzzle.fen}
-                id={`board-${puzzle.puzzleId}`}
+            {/* Rating range selectors */}
+            <label>
+              Difficulté minimum : {minRating}
+              <input
+                type="range"
+                min="1"
+                max="3001"
+                step="200"
+                value={minRating}
+                onChange={(e) =>
+                  setMinRating(parseInt(e.target.value))
+                }
               />
-            </div>
-          ))}
+            </label>
+            <label>
+              Difficulté maximum : {maxRating}
+              <input
+                type="range"
+                min="1"
+                max="3001"
+                step="200"
+                value={maxRating}
+                onChange={(e) =>
+                  setMaxRating(parseInt(e.target.value))
+                }
+              />
+            </label>
+
+            {/* Number of puzzles selection */}
+            <label>
+              Nombre de problèmes :
+              <div
+                className={styles.puzzleCountRadioContainer}
+              >
+                <label>
+                  <input
+                    type="radio"
+                    name="countOption"
+                    value="9"
+                    checked={countOption === "9"}
+                    onChange={() => {
+                      setCountOption("9");
+                      setCount(9);
+                    }}
+                  />
+                  9
+                </label>
+                <label>
+                  <input
+                    type="radio"
+                    name="countOption"
+                    value="18"
+                    checked={countOption === "18"}
+                    onChange={() => {
+                      setCountOption("18");
+                      setCount(18);
+                    }}
+                  />
+                  18
+                </label>
+                <label>
+                  <input
+                    type="radio"
+                    name="countOption"
+                    value="27"
+                    checked={countOption === "27"}
+                    onChange={() => {
+                      setCountOption("27");
+                      setCount(27);
+                    }}
+                  />
+                  27
+                </label>
+                <label>
+                  <input
+                    type="radio"
+                    name="countOption"
+                    value="custom"
+                    checked={countOption === "custom"}
+                    onChange={() =>
+                      setCountOption("custom")
+                    }
+                  />
+                  Personnalisé
+                  <input
+                    type="number"
+                    value={count}
+                    onChange={(e) =>
+                      setCount(parseInt(e.target.value))
+                    }
+                    disabled={countOption !== "custom"}
+                    id="count-input"
+                    style={{
+                      marginLeft: "10px",
+                      width: "60px",
+                    }}
+                  />
+                </label>
+              </div>
+            </label>
+
+            {/* Display rating and coordinates options */}
+            <label className={styles.ratingCheckboxLabel}>
+              <input
+                type="checkbox"
+                checked={displayRating}
+                onChange={(e) =>
+                  setDisplayRating(e.target.checked)
+                }
+              />
+              Afficher le classement
+            </label>
+            <label
+              className={styles.coordinateCheckboxLabel}
+            >
+              <input
+                type="checkbox"
+                checked={displayCoordinates}
+                onChange={(e) =>
+                  setDisplayCoordinates(e.target.checked)
+                }
+              />
+              Afficher les coordonnées
+            </label>
+
+            {/* Sorting order options */}
+            <label className={styles.orderRadioLabel}>
+              Ordre de difficulté :
+              <div
+                className={styles.orderRadioLabelContainer}
+              >
+                <label>
+                  <input
+                    type="radio"
+                    name="sortOrder"
+                    value="lowToHigh"
+                    checked={sortOrder === "lowToHigh"}
+                    onChange={() =>
+                      setSortOrder("lowToHigh")
+                    }
+                  />
+                  Croissant
+                </label>
+                <label>
+                  <input
+                    type="radio"
+                    name="sortOrder"
+                    value="highToLow"
+                    checked={sortOrder === "highToLow"}
+                    onChange={() =>
+                      setSortOrder("highToLow")
+                    }
+                  />
+                  Décroissant
+                </label>
+                <label>
+                  <input
+                    type="radio"
+                    name="sortOrder"
+                    value="random"
+                    checked={sortOrder === "random"}
+                    onChange={() => setSortOrder("random")}
+                  />
+                  Aléatoire
+                </label>
+              </div>
+            </label>
+
+            <div
+              ref={puzzleAppendingBoxRef}
+              className="puzzle-appending-box"
+            ></div>
+
+            <button id="generate-puzzle-btn" type="submit">
+              Générer les problèmes
+            </button>
+          </form>
+          {loading && <p>Loading...</p>}
+          <div>
+            {puzzles.map((puzzle) => (
+              <div
+                key={puzzle.puzzleId}
+                style={{
+                  marginBottom: "20px",
+                  display: "none",
+                }}
+              >
+                <ChessboardComponent
+                  fen={puzzle.fen}
+                  id={`board-${puzzle.puzzleId}`}
+                />
+              </div>
+            ))}
+          </div>
         </div>
-      </div>
-    </main>
+      </main>{" "}
+      <Footer />
+    </>
   );
 };
 
