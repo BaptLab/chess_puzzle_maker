@@ -10,38 +10,33 @@ jobs:
         runs-on: ubuntu-latest
 
         steps:
-            # 1. Récupération du dépôt
             - name: Checkout repository
               uses: actions/checkout@v2
 
-            # 2. Node.js 18 (compatible Next 15)
             - name: Set up Node.js
               uses: actions/setup-node@v2
               with:
                   node-version: "18"
 
-            # 3. Install des dépendances du front
             - name: Install dependencies
               working-directory: ./front
-              run: npm ci # plus rapide que npm install
+              run: npm ci
 
-            # 4. Build (static export via next.config.js → dossier front/out)
             - name: Build frontend (static export)
               working-directory: ./front
-              run: npm run build # 'output: export' déclenche la génération de /out
+              run: npm run build
 
-            # 5. Déploiement FTP : on part de la racine du repo,
-            #    on exclut tout, puis on inclut seulement ce qu'on veut
             - name: Upload front/out + back_php to FTP
               uses: SamKirkland/FTP-Deploy-Action@4.3.0
               with:
                   server: ${{ secrets.FTP_SERVER }}
                   username: ${{ secrets.FTP_USERNAME }}
                   password: ${{ secrets.FTP_PASSWORD }}
-                  local-dir: ./ # racine du dépôt
+                  local-dir: ./ # Racine du repo
                   server-dir: ./www/chess_puzzle_maker/
+                  dangerous-clean-slate: true # 🔥 Nettoie tout avant d’uploader
                   exclude: |
-                      **                         # on exclut tout par défaut
+                      **                         # Tout exclu par défaut
                   include: |
-                      front/out/**               # on inclut le site statique
-                      back_php/**                # on inclut l’API PHP
+                      front/out/**               # Inclut uniquement le front exporté
+                      back_php/**                # Et ton backend PHP
