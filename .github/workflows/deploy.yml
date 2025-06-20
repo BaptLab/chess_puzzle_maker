@@ -23,20 +23,15 @@ jobs:
               working-directory: ./front
               run: npm install
 
-            - name: Build and Export Frontend
+            - name: Build Frontend (Static Export via next.config.js)
               working-directory: ./front
               run: npm run build
 
-            - name: Upload to FTP Server
+            - name: Upload Static Site to FTP (Frontend only)
               uses: SamKirkland/FTP-Deploy-Action@4.3.0
               with:
                   server: ${{ secrets.FTP_SERVER }}
                   username: ${{ secrets.FTP_USERNAME }}
                   password: ${{ secrets.FTP_PASSWORD }}
-                  local-dir: ./ # root
+                  local-dir: ./front/out/
                   server-dir: ./www/chess_puzzle_maker/
-                  exclude: |
-                      **  # Exclude everything
-                  include: |
-                      front/out/**       # Only include exported frontend files
-                      back_php/**        # And backend PHP files
