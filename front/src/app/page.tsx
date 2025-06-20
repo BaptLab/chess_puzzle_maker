@@ -409,6 +409,17 @@ const Home = () => {
 						</p>
 					)}
 				</div>
+				<p
+					style={{
+						position: "fixed",
+						bottom: "10px",
+						right: "10px",
+						fontSize: "12px",
+						color: "#aaa",
+					}}
+				>
+					v1.0.3
+				</p>
 			</main>
 			<Footer />
 		</>
