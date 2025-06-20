@@ -6,7 +6,6 @@ on:
 
 jobs:
     build-and-deploy:
-        name: Build and Deploy
         runs-on: ubuntu-latest
 
         steps:
@@ -22,21 +21,28 @@ jobs:
               working-directory: ./front
               run: npm ci
 
-            - name: Build frontend (static export)
+            - name: Build frontend (static export → front/out)
               working-directory: ./front
-              run: npm run build
+              run: npm run build # output: "export" = dossier /out
 
-            - name: Upload front/out + back_php to FTP
+            # ───────────── 1) Upload du site statique ─────────────
+            - name: Upload static site
               uses: SamKirkland/FTP-Deploy-Action@4.3.0
               with:
                   server: ${{ secrets.FTP_SERVER }}
                   username: ${{ secrets.FTP_USERNAME }}
                   password: ${{ secrets.FTP_PASSWORD }}
-                  local-dir: ./ # Racine du repo
-                  server-dir: ./www/chess_puzzle_maker/
-                  dangerous-clean-slate: true # 🔥 Nettoie tout avant d’uploader
-                  exclude: |
-                      **                         # Tout exclu par défaut
-                  include: |
-                      front/out/**               # Inclut uniquement le front exporté
-                      back_php/**                # Et ton backend PHP
+                  local-dir: ./front/out/ # ⬅️ uniquement le contenu exporté
+                  server-dir: ./www/chess_puzzle_maker/ # ⬅️ racine publique
+                  dangerous-clean-slate: true # nettoie ce répertoire AVANT upload
+
+            # ───────────── 2) Upload du backend PHP ─────────────
+            - name: Upload backend PHP
+              uses: SamKirkland/FTP-Deploy-Action@4.3.0
+              with:
+                  server: ${{ secrets.FTP_SERVER }}
+                  username: ${{ secrets.FTP_USERNAME }}
+                  password: ${{ secrets.FTP_PASSWORD }}
+                  local-dir: ./back_php/ # ⬅️ seulement le back
+                  server-dir: ./www/chess_puzzle_maker/back_php/
+                  dangerous-clean-slate: true # nettoie le dossier back_php/ avant upload
