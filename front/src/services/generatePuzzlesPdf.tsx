@@ -141,5 +141,4 @@ export const generatePuzzlesPdf = async (
 	});
 
 	return pdf.output("bloburl").toString();
-	return pdfBlobUrl;
 };
