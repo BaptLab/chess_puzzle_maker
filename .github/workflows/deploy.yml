@@ -28,20 +28,32 @@ jobs:
 
             # Step 4: Build Project
             - name: Build Frontend
-              working-directory: ./front # Navigate to the 'front' directory
-              run: npm run build && npm run export # Ensure the export step runs
+              working-directory: ./front
+              run: npm run build
+
+            # Step 4.5: Export Project
+            - name: Export Frontend
+              working-directory: ./front
+              run: npm run export
 
             # Step 5: Deploy Only Necessary Folders to FTP
-            - name: Upload to FTP Server
+
+            # Upload frontend static export
+            - name: Upload Frontend Static
               uses: SamKirkland/FTP-Deploy-Action@4.3.0
               with:
                   server: ${{ secrets.FTP_SERVER }}
                   username: ${{ secrets.FTP_USERNAME }}
                   password: ${{ secrets.FTP_PASSWORD }}
-                  local-dir: ./ # Root folder for the action
-                  server-dir: ./www/chess_puzzle_maker/ # Target directory for deployment
-                  exclude: |
-                      ** # Exclude everything by default
-                  include: |
-                      front/out/** # Include only the exported output from 'front'
-                      back_php/** # Include only the 'back_php' folder
+                  local-dir: ./front/out/
+                  server-dir: ./www/chess_puzzle_maker/
+
+            # Upload backend PHP files
+            - name: Upload Backend PHP
+              uses: SamKirkland/FTP-Deploy-Action@4.3.0
+              with:
+                  server: ${{ secrets.FTP_SERVER }}
+                  username: ${{ secrets.FTP_USERNAME }}
+                  password: ${{ secrets.FTP_PASSWORD }}
+                  local-dir: ./back_php/
+                  server-dir: ./www/chess_puzzle_maker/back_php/
