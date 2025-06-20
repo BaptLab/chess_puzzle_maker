@@ -2,8 +2,7 @@ name: Build and Deploy to FTP
 
 on:
     push:
-        branches:
-            - main
+        branches: [main]
 
 jobs:
     build-and-deploy:
@@ -11,36 +10,38 @@ jobs:
         runs-on: ubuntu-latest
 
         steps:
-            - name: Checkout Repository
+            # 1. Récupération du dépôt
+            - name: Checkout repository
               uses: actions/checkout@v2
 
+            # 2. Node.js 18 (compatible Next 15)
             - name: Set up Node.js
               uses: actions/setup-node@v2
               with:
                   node-version: "18"
 
-            - name: Install Dependencies
+            # 3. Install des dépendances du front
+            - name: Install dependencies
               working-directory: ./front
-              run: npm install
+              run: npm ci # plus rapide que npm install
 
-            - name: Build Frontend (Static Export via next.config.js)
+            # 4. Build (static export via next.config.js → dossier front/out)
+            - name: Build frontend (static export)
               working-directory: ./front
-              run: npm run build
+              run: npm run build # 'output: export' déclenche la génération de /out
 
-            - name: Upload Static Site to FTP (Frontend)
+            # 5. Déploiement FTP : on part de la racine du repo,
+            #    on exclut tout, puis on inclut seulement ce qu'on veut
+            - name: Upload front/out + back_php to FTP
               uses: SamKirkland/FTP-Deploy-Action@4.3.0
               with:
                   server: ${{ secrets.FTP_SERVER }}
                   username: ${{ secrets.FTP_USERNAME }}
                   password: ${{ secrets.FTP_PASSWORD }}
-                  local-dir: ./front/out/
-                  server-dir: ./www/chess_puzzle_maker/out/
-
-            - name: Upload Backend PHP to FTP
-              uses: SamKirkland/FTP-Deploy-Action@4.3.0
-              with:
-                  server: ${{ secrets.FTP_SERVER }}
-                  username: ${{ secrets.FTP_USERNAME }}
-                  password: ${{ secrets.FTP_PASSWORD }}
-                  local-dir: ./back_php/
-                  server-dir: ./www/chess_puzzle_maker/back_php/
+                  local-dir: ./ # racine du dépôt
+                  server-dir: ./www/chess_puzzle_maker/
+                  exclude: |
+                      **                         # on exclut tout par défaut
+                  include: |
+                      front/out/**               # on inclut le site statique
+                      back_php/**                # on inclut l’API PHP
