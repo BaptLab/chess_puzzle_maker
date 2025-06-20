@@ -3,7 +3,7 @@ name: Build and Deploy to FTP
 on:
     push:
         branches:
-            - main # Trigger on push to main branch
+            - main
 
 jobs:
     build-and-deploy:
@@ -11,37 +11,32 @@ jobs:
         runs-on: ubuntu-latest
 
         steps:
-            # Step 1: Checkout Repository
             - name: Checkout Repository
               uses: actions/checkout@v2
 
-            # Step 2: Set up Node.js
             - name: Set up Node.js
               uses: actions/setup-node@v2
               with:
-                  node-version: "18" # Update to Node.js 18, compatible with Next.js 14.2.12
+                  node-version: "18"
 
-            # Step 3: Install Dependencies
             - name: Install Dependencies
-              working-directory: ./front # Navigate to the 'front' directory
+              working-directory: ./front
               run: npm install
 
-            # Step 4: Build Project
-            - name: Build Frontend
-              working-directory: ./front # Navigate to the 'front' directory
-              run: npm run build # Ensure the export step runs
+            - name: Build and Export Frontend
+              working-directory: ./front
+              run: npm run build && npm run export
 
-            # Step 5: Deploy Only Necessary Folders to FTP
             - name: Upload to FTP Server
               uses: SamKirkland/FTP-Deploy-Action@4.3.0
               with:
                   server: ${{ secrets.FTP_SERVER }}
                   username: ${{ secrets.FTP_USERNAME }}
                   password: ${{ secrets.FTP_PASSWORD }}
-                  local-dir: ./ # Root folder for the action
-                  server-dir: ./www/chess_puzzle_maker/ # Target directory for deployment
+                  local-dir: ./ # root
+                  server-dir: ./www/chess_puzzle_maker/
                   exclude: |
-                      ** # Exclude everything by default
+                      **  # Exclude everything
                   include: |
-                      front/out/** # Include only the exported output from 'front'
-                      back_php/** # Include only the 'back_php' folder
+                      front/out/**       # Only include exported frontend files
+                      back_php/**        # And backend PHP files
