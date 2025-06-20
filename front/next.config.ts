@@ -6,7 +6,7 @@ const nextConfig: NextConfig = {
 	assetPrefix: "", // Correctly point to where static files are hosted
 	trailingSlash: true, // Ensures URLs end with a slash for static hosting
 	env: {
-		NEXT_PUBLIC_API_URL: "https://chesspuzzlemaker.com/back_php/controllers/",
+		NEXT_PUBLIC_API_URL: "https://chesspuzzlemaker.com/back_php/controllers/index.php",
 	},
 };
 
