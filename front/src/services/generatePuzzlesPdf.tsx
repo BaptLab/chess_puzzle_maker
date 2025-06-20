@@ -140,6 +140,6 @@ export const generatePuzzlesPdf = async (
 		pdf.text(wrappedText, xPosition, yPosition);
 	});
 
-	const pdfBlobUrl = pdf.output("bloburl");
+	return pdf.output("bloburl").toString();
 	return pdfBlobUrl;
 };
