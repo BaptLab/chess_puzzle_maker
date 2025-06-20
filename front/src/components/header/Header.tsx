@@ -9,6 +9,13 @@ const Header = () => {
         className={styles.headerRedirect}
         data-new-text="Homepage"
       >
+        <img
+          className={styles.headerImg}
+          alt="logo"
+          src={
+            "https://www.chesspuzzlemaker.com/favico-32x32.png"
+          }
+        />
         <h1>Chess Puzzle Maker</h1>
       </Link>
     </header>

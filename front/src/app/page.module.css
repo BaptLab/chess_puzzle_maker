@@ -157,7 +157,7 @@ a.secondary {
   width: fit-content;
   border-radius: 5px;
   padding: 10px;
-  background-color: #81b64c;
+  background-color: #e7853a;
   color: white;
   font-weight: 600;
   letter-spacing: 1px;
@@ -170,7 +170,7 @@ a.secondary {
   width: fit-content;
   border-radius: 5px;
   padding: 10px;
-  background-color: #81b64c;
+  background-color: #e7853a;
   color: white;
   font-weight: 500;
 }
@@ -194,7 +194,7 @@ a.secondary {
   -webkit-appearance: none;
   width: 15px;
   height: 15px;
-  background-color: #81b64c; /* Green dot */
+  background-color: #e7853a; /* Green dot */
   border-radius: 50%; /* Make it a circle */
   cursor: pointer;
   box-shadow: 0 0 2px rgba(0, 0, 0, 0.3); /* Optional shadow for depth */
@@ -204,7 +204,7 @@ a.secondary {
 .puzzleMenu input[type="range"]::-moz-range-thumb {
   width: 15px;
   height: 15px;
-  background-color: #81b64c;
+  background-color: #e7853a;
   border-radius: 50%;
   cursor: pointer;
   box-shadow: 0 0 2px rgba(0, 0, 0, 0.3);
@@ -301,7 +301,7 @@ a.secondary {
     box-shadow: inherit;
     display: flex;
     flex-direction: column;
-    margin-top: 20px;
+    margin-top: 0px;
   }
 
   .puzzleCountRadioContainer {

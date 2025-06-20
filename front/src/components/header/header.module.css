@@ -5,3 +5,16 @@
   display: flex;
   padding-left: 20px;
 }
+
+.headerImg {
+  margin-right: 15px;
+  object-fit: contain;
+  height: 100%;
+  width: 35px;
+  filter: invert(50%) sepia(1) saturate(3)
+    hue-rotate(-15deg);
+}
+
+.headerRedirect {
+  display: flex;
+}

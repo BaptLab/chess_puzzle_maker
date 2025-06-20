@@ -62,7 +62,7 @@ select option[value=""][disabled] {
   color: grey;
 }
 select:focus {
-  border-color: #81b64c;
+  border-color: #e7853a;
   outline: none;
 }
 
@@ -92,14 +92,14 @@ option {
 
 /* Option hover effect */
 option:hover {
-  background-color: #81b64c;
+  background-color: #e7853a;
   color: white;
 }
 
 /* Set a custom color for the checkbox and radio button when checked */
 input[type="checkbox"],
 input[type="radio"] {
-  accent-color: #81b64c; /* Use any color you like */
+  accent-color: #e7853a; /* Use any color you like */
 }
 
 #theme-select {
@@ -120,7 +120,7 @@ input[type="radio"] {
 }
 
 #count-input:focus {
-  border-color: #81b64c; /* Green border on focus */
+  border-color: #e7853a; /* Green border on focus */
   outline: none; /* Remove outline on focus */
 }
 
@@ -143,7 +143,7 @@ form {
 .puzzle-appending-box {
   display: flex;
   justify-content: center;
-  margin-bottom: 10px;
+  margin-bottom: 0px;
 }
 
 * {
