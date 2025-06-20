@@ -33,7 +33,7 @@ jobs:
                   server: ${{ secrets.FTP_SERVER }}
                   username: ${{ secrets.FTP_USERNAME }}
                   password: ${{ secrets.FTP_PASSWORD }}
-                  local-dir: ./front/out
+                  local-dir: ./front/out/
                   server-dir: ./www/chess_puzzle_maker/out
 
             - name: Upload Backend PHP to FTP
