@@ -31,11 +31,6 @@ jobs:
               working-directory: ./front
               run: npm run build
 
-            # Step 4.5: Export Project
-            - name: Export Frontend
-              working-directory: ./front
-              run: npm run export
-
             # Step 5: Deploy Only Necessary Folders to FTP
 
             # Upload frontend static export
