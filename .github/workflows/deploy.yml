@@ -2,47 +2,46 @@ name: Build and Deploy to FTP
 
 on:
     push:
-        branches: [main]
+        branches:
+            - main # Trigger on push to main branch
 
 jobs:
     build-and-deploy:
+        name: Build and Deploy
         runs-on: ubuntu-latest
 
         steps:
-            - name: Checkout repository
+            # Step 1: Checkout Repository
+            - name: Checkout Repository
               uses: actions/checkout@v2
 
+            # Step 2: Set up Node.js
             - name: Set up Node.js
               uses: actions/setup-node@v2
               with:
-                  node-version: "18"
+                  node-version: "18" # Update to Node.js 18, compatible with Next.js 14.2.12
 
-            - name: Install dependencies
-              working-directory: ./front
-              run: npm ci
+            # Step 3: Install Dependencies
+            - name: Install Dependencies
+              working-directory: ./front # Navigate to the 'front' directory
+              run: npm install
 
-            - name: Build frontend (static export → front/out)
-              working-directory: ./front
-              run: npm run build # output: "export" = dossier /out
+            # Step 4: Build Project
+            - name: Build Frontend
+              working-directory: ./front # Navigate to the 'front' directory
+              run: npm run build && npm run export # Ensure the export step runs
 
-            # ───────────── 1) Upload du site statique ─────────────
-            - name: Upload static site
+            # Step 5: Deploy Only Necessary Folders to FTP
+            - name: Upload to FTP Server
               uses: SamKirkland/FTP-Deploy-Action@4.3.0
               with:
                   server: ${{ secrets.FTP_SERVER }}
                   username: ${{ secrets.FTP_USERNAME }}
                   password: ${{ secrets.FTP_PASSWORD }}
-                  local-dir: ./front/out/ # ⬅️ uniquement le contenu exporté
-                  server-dir: ./www/chess_puzzle_maker/ # ⬅️ racine publique
-                  dangerous-clean-slate: true # nettoie ce répertoire AVANT upload
-
-            # ───────────── 2) Upload du backend PHP ─────────────
-            - name: Upload backend PHP
-              uses: SamKirkland/FTP-Deploy-Action@4.3.0
-              with:
-                  server: ${{ secrets.FTP_SERVER }}
-                  username: ${{ secrets.FTP_USERNAME }}
-                  password: ${{ secrets.FTP_PASSWORD }}
-                  local-dir: ./back_php/ # ⬅️ seulement le back
-                  server-dir: ./www/chess_puzzle_maker/back_php/
-                  dangerous-clean-slate: true # nettoie le dossier back_php/ avant upload
+                  local-dir: ./ # Root folder for the action
+                  server-dir: ./www/chess_puzzle_maker/ # Target directory for deployment
+                  exclude: |
+                      ** # Exclude everything by default
+                  include: |
+                      front/out/** # Include only the exported output from 'front'
+                      back_php/** # Include only the 'back_php' folder
