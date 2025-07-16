@@ -1,7 +1,8 @@
 import { Puzzle } from "../interfaces/Puzzle";
 import { Chess } from "chess.js"; // Import chess.js to handle moves
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL;
+// Use a type assertion to avoid TypeScript errors if NEXT_PUBLIC_API_URL is not in the type definition
+const API_URL = process.env.NEXT_PUBLIC_API_URL as string;
 
 export const fetchPuzzles = async (
 	theme: string | undefined,
@@ -9,10 +10,15 @@ export const fetchPuzzles = async (
 	maxRating: number | undefined,
 	count: number | undefined
 ): Promise<{ puzzles: Puzzle[]; error?: string }> => {
-	console.log("Fetching puzzles from:", `${API_URL}?count=${count}&theme=${theme}&minRating=${minRating}&maxRating=${maxRating}`);
+	console.log(
+		"Fetching puzzles from:",
+		`${API_URL}?count=${count}&theme=${theme}&minRating=${minRating}&maxRating=${maxRating}`
+	);
 
 	try {
-		const response = await fetch(`${API_URL}?count=${count}&theme=${theme}&minRating=${minRating}&maxRating=${maxRating}`);
+		const response = await fetch(
+			`${API_URL}?count=${count}&theme=${theme}&minRating=${minRating}&maxRating=${maxRating}`
+		);
 
 		console.log("Response status:", response.status);
 		console.log("Response headers:", response.headers);
@@ -23,7 +29,9 @@ export const fetchPuzzles = async (
 			} else if (response.status === 500) {
 				throw new Error("Server error. Please try again later.");
 			} else {
-				throw new Error("Failed to fetch puzzles. Unexpected error occurred.");
+				throw new Error(
+					"Failed to fetch puzzles. Unexpected error occurred."
+				);
 			}
 		}
 
@@ -32,7 +40,10 @@ export const fetchPuzzles = async (
 
 		if (jsonResponse.error) {
 			// Display backend-provided error message
-			throw new Error(jsonResponse.message || "An error occurred while fetching puzzles.");
+			throw new Error(
+				jsonResponse.message ||
+					"An error occurred while fetching puzzles."
+			);
 		}
 
 		const puzzles: Puzzle[] = jsonResponse.data;
@@ -63,7 +74,10 @@ export const fetchPuzzles = async (
 				moves.slice(2).forEach((move, index) => {
 					const result = chess.move(move);
 					if (result) {
-						const notation = index % 2 === 0 ? `${moveNumber}.${result.san}` : result.san;
+						const notation =
+							index % 2 === 0
+								? `${moveNumber}.${result.san}`
+								: result.san;
 						solutionMoves.push(notation);
 						if (index % 2 !== 0) moveNumber++;
 					}
@@ -73,7 +87,10 @@ export const fetchPuzzles = async (
 				moves.slice(1).forEach((move, index) => {
 					const result = chess.move(move);
 					if (result) {
-						const notation = index % 2 === 0 ? `${moveNumber}.${result.san}` : result.san;
+						const notation =
+							index % 2 === 0
+								? `${moveNumber}.${result.san}`
+								: result.san;
 						solutionMoves.push(notation);
 						if (index % 2 !== 0) moveNumber++;
 					}
