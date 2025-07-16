@@ -39,7 +39,7 @@ export const generatePuzzlesPdf = async (
 			let defY = 25; // Ligne de départ sous le titre
 			const defX = 15;
 
-			Object.entries(themeDefinitions).forEach(([key, value]) => {
+			Object.values(themeDefinitions).forEach((value) => {
 				const line = `${value.fr} : ${value.definition}`;
 				const wrapped = pdf.splitTextToSize(line, pageWidth - 30);
 				pdf.text(wrapped, defX, defY);
