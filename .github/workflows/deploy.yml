@@ -37,13 +37,14 @@ jobs:
 
             # Upload frontend static export
             - name: Upload Frontend Static
-              uses: SamKirkland/FTP-Deploy-Action@4.3.0
+              uses: BaptLab/FTP-Deploy-Action@fix-550-skip
               with:
                   server: ${{ secrets.FTP_SERVER }}
                   username: ${{ secrets.FTP_USERNAME }}
                   password: ${{ secrets.FTP_PASSWORD }}
                   local-dir: ./front/out/ # ←✅ seule ligne modifiée
                   server-dir: ./www/chess_puzzle_maker/
+                  dangerous-clean-slate: true
 
             # Upload backend PHP files
             - name: Upload Backend PHP
