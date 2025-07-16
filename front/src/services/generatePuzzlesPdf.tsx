@@ -43,7 +43,7 @@ export const generatePuzzlesPdf = async (
 				const line = `${value.fr} : ${value.definition}`;
 				const wrapped = pdf.splitTextToSize(line, pageWidth - 30);
 				pdf.text(wrapped, defX, defY);
-				defY += wrapped.length * 5 + 2; // Décaler la ligne suivante
+				defY += wrapped.length * 3 + 2; // Décaler la ligne suivante
 			});
 		}
 
