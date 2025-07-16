@@ -104,7 +104,7 @@ export const generatePuzzlesPdf = async (
 
 			await new Promise((res) => setTimeout(res, 100));
 
-			await html2canvas(container, { useCORS: true, scale: 1 }).then(
+			await html2canvas(container, { useCORS: true, scale: 1.5 }).then(
 				(canvas) => {
 					const imgData = canvas.toDataURL("image/png");
 					pdf.addImage(imgData, "PNG", x, y, 50, 50);
