@@ -494,7 +494,7 @@ const Home = () => {
 						color: "#aaa",
 					}}
 				>
-					v1.0.3
+					v 1.0.5
 				</p>
 			</main>
 			<Footer />

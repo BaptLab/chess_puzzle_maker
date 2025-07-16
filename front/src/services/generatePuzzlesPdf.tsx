@@ -19,7 +19,7 @@ export const generatePuzzlesPdf = async (
 	const cellWidth = 65;
 	const defaultCellHeight = 88;
 	const reducedCellHeight = 78;
-	const definitionsOffset = 10; // marge après définitions
+	const definitionsOffset = 7; // marge après définitions
 
 	const startX = 15;
 	const defaultStartY = 40;
