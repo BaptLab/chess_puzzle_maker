@@ -19,11 +19,11 @@ jobs:
             - name: Set up Node.js
               uses: actions/setup-node@v2
               with:
-                  node-version: "18" # Update to Node.js 18, compatible with Next.js 14.2.12
+                  node-version: "18"
 
             # Step 3: Install Dependencies
             - name: Install Dependencies
-              working-directory: ./front # Navigate to the 'front' directory
+              working-directory: ./front
               run: npm install
 
             # Step 4: Build Project
@@ -33,20 +33,27 @@ jobs:
               env:
                   NEXT_PUBLIC_API_URL: ${{ secrets.NEXT_PUBLIC_API_URL }}
 
-            # Step 5: Deploy Only Necessary Folders to FTP
+            # Step 5: Create .env file for backend
+            - name: Create .env file for backend
+              run: |
+                  echo "DB_HOST=${{ secrets.DB_HOST }}" > ./back_php/.env
+                  echo "DB_PORT=${{ secrets.DB_PORT }}" >> ./back_php/.env
+                  echo "DB_NAME=${{ secrets.DB_NAME }}" >> ./back_php/.env
+                  echo "DB_USER=${{ secrets.DB_USER }}" >> ./back_php/.env
+                  echo "DB_PASSWORD=${{ secrets.DB_PASSWORD }}" >> ./back_php/.env
 
-            # Upload frontend static export
+            # Step 6: Deploy frontend
             - name: Upload Frontend Static
               uses: BaptLab/FTP-Deploy-Action@fix-550-skip
               with:
                   server: ${{ secrets.FTP_SERVER }}
                   username: ${{ secrets.FTP_USERNAME }}
                   password: ${{ secrets.FTP_PASSWORD }}
-                  local-dir: ./front/out/ # ←✅ seule ligne modifiée
+                  local-dir: ./front/out/
                   server-dir: ./www/chess_puzzle_maker/
-                  dangerous-clean-slate: true
+                  dangerous-clean-slate: false
 
-            # Upload backend PHP files
+            # Step 7: Deploy backend PHP
             - name: Upload Backend PHP
               uses: SamKirkland/FTP-Deploy-Action@4.3.0
               with:
