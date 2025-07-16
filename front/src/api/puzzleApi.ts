@@ -1,7 +1,6 @@
 import { Puzzle } from "../interfaces/Puzzle";
-import { Chess } from "chess.js"; // Import chess.js to handle moves
+import { Chess } from "chess.js";
 
-// Use a type assertion to avoid TypeScript errors if NEXT_PUBLIC_API_URL is not in the type definition
 const API_URL = process.env.NEXT_PUBLIC_API_URL as string;
 
 export const fetchPuzzles = async (
@@ -9,7 +8,11 @@ export const fetchPuzzles = async (
 	minRating: number | undefined,
 	maxRating: number | undefined,
 	count: number | undefined
-): Promise<{ puzzles: Puzzle[]; error?: string }> => {
+): Promise<{
+	puzzles: Puzzle[];
+	themeDefinitions: Record<string, { fr: string; definition: string }>;
+	error?: string;
+}> => {
 	console.log(
 		"Fetching puzzles from:",
 		`${API_URL}?count=${count}&theme=${theme}&minRating=${minRating}&maxRating=${maxRating}`
@@ -38,74 +41,70 @@ export const fetchPuzzles = async (
 		const jsonResponse = await response.json();
 		console.log("JSON response:", jsonResponse);
 
-		if (jsonResponse.error) {
-			// Display backend-provided error message
+		if (jsonResponse.status === "error" || jsonResponse.error) {
 			throw new Error(
 				jsonResponse.message ||
 					"An error occurred while fetching puzzles."
 			);
 		}
 
-		const puzzles: Puzzle[] = jsonResponse.data;
-
+		// On extrait puzzles ET definitions
+		const puzzles = jsonResponse.data.puzzles as Puzzle[];
+		const themeDefinitions = jsonResponse.data.themes as Record<
+			string,
+			{ fr: string; definition: string }
+		>;
+		// Traitement des FEN et génération de solution
 		puzzles.forEach((puzzle) => {
 			const chess = new Chess(puzzle.fen);
 			const moves = puzzle.moves ? puzzle.moves.split(" ") : [];
 
-			// Apply only the first move to the FEN for the final position
-			if (moves.length > 0) {
-				chess.move(moves[0]);
-			}
-
-			// Update the FEN to reflect the position after the first move
+			if (moves.length > 0) chess.move(moves[0]);
 			puzzle.fen = chess.fen();
 
-			// Generate the solution string
 			let moveNumber = 1;
 			const solutionMoves: string[] = [];
 
-			// Check if Black is to move first
-			if (chess.turn() === "b") {
-				const result = chess.move(moves[1]);
-				if (result) {
-					solutionMoves.push(`1... ${result.san}`);
+			if (chess.turn() === "b" && moves.length > 1) {
+				const blackFirst = chess.move(moves[1]);
+				if (blackFirst) {
+					solutionMoves.push(`1... ${blackFirst.san}`);
 					moveNumber = 2;
 				}
-				moves.slice(2).forEach((move, index) => {
+				moves.slice(2).forEach((move, idx) => {
 					const result = chess.move(move);
 					if (result) {
 						const notation =
-							index % 2 === 0
+							idx % 2 === 0
 								? `${moveNumber}.${result.san}`
 								: result.san;
 						solutionMoves.push(notation);
-						if (index % 2 !== 0) moveNumber++;
+						if (idx % 2 !== 0) moveNumber++;
 					}
 				});
 			} else {
-				// White starts: standard format
-				moves.slice(1).forEach((move, index) => {
+				moves.slice(1).forEach((move, idx) => {
 					const result = chess.move(move);
 					if (result) {
 						const notation =
-							index % 2 === 0
+							idx % 2 === 0
 								? `${moveNumber}.${result.san}`
 								: result.san;
 						solutionMoves.push(notation);
-						if (index % 2 !== 0) moveNumber++;
+						if (idx % 2 !== 0) moveNumber++;
 					}
 				});
 			}
 
-			// Join the moves into a single notation string and assign it to `solution`
 			puzzle.solution = solutionMoves.join(" ");
 		});
 
-		return { puzzles };
+		return { puzzles, themeDefinitions };
 	} catch (error: any) {
 		console.error(`Error fetching puzzles from ${API_URL}:`, error);
 		return {
 			puzzles: [],
+			themeDefinitions: {},
 			error: error.message || "An unexpected error occurred.",
 		};
 	}

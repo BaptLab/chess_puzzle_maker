@@ -20,6 +20,7 @@ const Home = () => {
 	const [errorMessage, setErrorMessage] = useState<string | null>(null); // State for error messages
 	const [countOption, setCountOption] = useState<string>("9");
 	const [displayRating, setDisplayRating] = useState<boolean>(true);
+	const [displayDefinitions, setDisplayDefinitions] = useState<boolean>(true);
 	const [displayCoordinates, setDisplayCoordinates] = useState<boolean>(true);
 	const [sortOrder, setSortOrder] = useState<string>("lowToHigh");
 	const [pdfUrl, setPdfUrl] = useState<string | null>(null);
@@ -28,62 +29,62 @@ const Home = () => {
 	const puzzleAppendingBoxRef = useRef<HTMLDivElement>(null);
 
 	const themeOptions = [
-		"divers",
-		"pion avancé",
-		"avantage",
-		"mat arabe",
-		"attaque F2F7",
-		"attraction",
-		"mat sur la dernière rangée",
-		"finale de fou",
-		"mat de Boden",
-		"prise du défenseur",
-		"découverte",
-		"écrasement",
-		"défense",
-		"déviation",
-		"attaque à la découverte",
-		"mat avec deux fous",
-		"échec double",
-		"en passant",
-		"finale",
-		"égalité",
-		"roi exposé",
-		"fourchette",
-		"pièce en prise",
-		"mat crochet",
-		"interférence",
-		"intermezzo",
-		"attaque aile roi",
-		"finale de cavalier",
-		"problème long",
-		"maître",
-		"maître contre maître",
-		"mat",
-		"mat en 1",
-		"mat en 2",
-		"mat en 3",
-		"mat en 4",
-		"milieu de jeu",
-		"un coup",
-		"ouverture",
-		"finale de pions",
-		"clouage",
-		"promotion",
-		"finale de dames",
-		"finale de dames et tours",
-		"attaque sur l'aile dame",
-		"coup silencieux",
-		"finale de tours",
-		"sacrifice",
-		"court",
-		"enfilade",
-		"mat à l'étouffé",
-		"super grand maître",
-		"pièce enfermée",
-		"très long",
-		"rayon X",
-		"zugzwang",
+		"Divers",
+		"Pion avancé",
+		"Avantage",
+		"Mat arabe",
+		"Attaque sur f2 f7",
+		"Attraction",
+		"Mat sur la dernière rangée",
+		"Finale de fou",
+		"Mat de Boden",
+		"Prise du défenseur",
+		"Découverte",
+		"Écrasement",
+		"Défense",
+		"Déviation",
+		"Attaque à la découverte",
+		"Mat avec deux fous",
+		"Échec double",
+		"En passant",
+		"Finale",
+		"Égalité",
+		"Roi exposé",
+		"Fourchette",
+		"Pièce en prise",
+		"Mat du crochet",
+		"Interférence",
+		"Intermezzo",
+		"Attaque sur l'aile roi",
+		"Finale de cavalier",
+		"Problème long",
+		"Maître",
+		"Maître contre maître",
+		"Mat",
+		"Mat en 1",
+		"Mat en 2",
+		"Mat en 3",
+		"Mat en 4",
+		"Milieu de jeu",
+		"Un coup",
+		"Ouverture",
+		"Finale de pions",
+		"Clouage",
+		"Promotion",
+		"Finale de dames",
+		"Finale de dames et tours",
+		"Attaque sur l'aile dame",
+		"Coup silencieux",
+		"Finale de tours",
+		"Sacrifice",
+		"Court",
+		"Enfilade",
+		"Mat à l'étouffé",
+		"Super grand maître",
+		"Pièce enfermée",
+		"Très long",
+		"Rayon X",
+		"Zugzwang",
 	];
 
 	const addThemeSelect = (value: string, index: number) => {
@@ -113,7 +114,8 @@ const Home = () => {
 			}
 		};
 
-		const selectElement = selectContainerRef.current?.querySelector("select");
+		const selectElement =
+			selectContainerRef.current?.querySelector("select");
 		if (selectElement) {
 			selectElement.addEventListener("click", toggleSelectArrow);
 			selectElement.addEventListener("blur", removeSelectArrow);
@@ -127,10 +129,10 @@ const Home = () => {
 		};
 	}, []);
 
-	const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault();
 		setLoading(true);
-		setErrorMessage(null); // Reset error message
+		setErrorMessage(null);
 
 		const selectedThemes = themes.filter((theme) => theme !== "");
 		if (selectedThemes.length === 0) {
@@ -139,25 +141,35 @@ const Home = () => {
 			return;
 		}
 
-		const finalCount = countOption === "custom" ? count : parseInt(countOption);
+		const finalCount =
+			countOption === "custom" ? count : parseInt(countOption);
 
-		const response = await fetchPuzzles(selectedThemes.join(","), minRating, maxRating, finalCount);
+		const response = await fetchPuzzles(
+			selectedThemes.join(","),
+			minRating,
+			maxRating,
+			finalCount
+		);
 
 		if (response.error) {
 			// If the API indicates an error, display the alert
-			alert("Aucun problème avec ces paramètres n'a été trouvé.\nEssayer de réduire le nombre de thèmes ou d'élargir l'écart d'élo.");
+			alert(
+				"Aucun problème avec ces paramètres n'a été trouvé.\nEssayer de réduire le nombre de thèmes ou d'élargir l'écart d'élo."
+			);
 			setLoading(false);
 			return;
 		}
 
 		const data = response.puzzles || []; // Default to an empty array if no puzzles are returned
+		const themeDefinitions = response.themeDefinitions || {};
+
 		if (!Array.isArray(data) || data.length === 0) {
-			alert("Aucun problème avec ces paramètres n'a été trouvé.\nEssayer de réduire le nombre de thèmes ou d'élargir l'écart d'élo.");
+			alert(
+				"Aucun problème avec ces paramètres n'a été trouvé.\nEssayer de réduire le nombre de thèmes ou d'élargir l'écart d'élo."
+			);
 			setLoading(false);
 			return;
 		}
-
-		console.log("Fetched puzzles:", data);
 
 		if (sortOrder === "lowToHigh") {
 			data.sort((a, b) => a.rating - b.rating);
@@ -175,7 +187,9 @@ const Home = () => {
 			selectedThemes.join(", "),
 			puzzleAppendingBoxRef.current,
 			displayRating,
-			displayCoordinates
+			displayCoordinates,
+			displayDefinitions,
+			themeDefinitions
 		);
 		if (blobUrl) {
 			setPdfUrl(blobUrl); // ← stocke dans le state
@@ -189,7 +203,11 @@ const Home = () => {
 			<main className={styles.mainContainer}>
 				<div className={styles.puzzleMenu}>
 					<h2>Sélectionnez vos paramètres</h2>
-					{errorMessage && <p style={{ color: "red", fontWeight: "bold" }}>{errorMessage}</p>}
+					{errorMessage && (
+						<p style={{ color: "red", fontWeight: "bold" }}>
+							{errorMessage}
+						</p>
+					)}
 					<form onSubmit={handleSubmit}>
 						{themes.map((theme, index) => (
 							<label
@@ -200,12 +218,22 @@ const Home = () => {
 								}}
 							>
 								{`Thème ${index + 1}`}
-								<div className={styles.selectContainer} ref={selectContainerRef} style={{ marginLeft: "10px" }}>
+								<div
+									className={styles.selectContainer}
+									ref={selectContainerRef}
+									style={{ marginLeft: "10px" }}
+								>
 									<select
 										value={theme}
-										onChange={(e) => addThemeSelect(e.target.value, index)}
+										onChange={(e) =>
+											addThemeSelect(
+												e.target.value,
+												index
+											)
+										}
 										style={{
-											color: theme === "" ? "grey" : "white",
+											color:
+												theme === "" ? "grey" : "white",
 										}}
 									>
 										<option value='' disabled hidden>
@@ -214,8 +242,13 @@ const Home = () => {
 										{themeOptions
 											.filter(
 												(option) =>
-													(index === 0 && option === "divers") ||
-													(option !== "divers" && (!themes.includes(option) || option === theme))
+													(index === 0 &&
+														option === "divers") ||
+													(option !== "divers" &&
+														(!themes.includes(
+															option
+														) ||
+															option === theme))
 											)
 											.map((t) => (
 												<option key={t} value={t}>
@@ -255,7 +288,9 @@ const Home = () => {
 								max='3001'
 								step='200'
 								value={minRating}
-								onChange={(e) => setMinRating(parseInt(e.target.value))}
+								onChange={(e) =>
+									setMinRating(parseInt(e.target.value))
+								}
 							/>
 						</label>
 						<label>
@@ -266,7 +301,9 @@ const Home = () => {
 								max='3001'
 								step='200'
 								value={maxRating}
-								onChange={(e) => setMaxRating(parseInt(e.target.value))}
+								onChange={(e) =>
+									setMaxRating(parseInt(e.target.value))
+								}
 							/>
 						</label>
 
@@ -318,13 +355,17 @@ const Home = () => {
 										name='countOption'
 										value='custom'
 										checked={countOption === "custom"}
-										onChange={() => setCountOption("custom")}
+										onChange={() =>
+											setCountOption("custom")
+										}
 									/>
 									Personnalisé
 									<input
 										type='number'
 										value={count}
-										onChange={(e) => setCount(parseInt(e.target.value))}
+										onChange={(e) =>
+											setCount(parseInt(e.target.value))
+										}
 										disabled={countOption !== "custom"}
 										id='count-input'
 										style={{
@@ -335,13 +376,34 @@ const Home = () => {
 								</label>
 							</div>
 						</label>
-
+						<label className={styles.definitionCheckboxLabel}>
+							<input
+								type='checkbox'
+								checked={displayDefinitions}
+								onChange={(e) =>
+									setDisplayDefinitions(e.target.checked)
+								}
+							/>
+							Afficher la ou les définitions
+						</label>
 						<label className={styles.ratingCheckboxLabel}>
-							<input type='checkbox' checked={displayRating} onChange={(e) => setDisplayRating(e.target.checked)} />
+							<input
+								type='checkbox'
+								checked={displayRating}
+								onChange={(e) =>
+									setDisplayRating(e.target.checked)
+								}
+							/>
 							Afficher le classement
 						</label>
 						<label className={styles.coordinateCheckboxLabel}>
-							<input type='checkbox' checked={displayCoordinates} onChange={(e) => setDisplayCoordinates(e.target.checked)} />
+							<input
+								type='checkbox'
+								checked={displayCoordinates}
+								onChange={(e) =>
+									setDisplayCoordinates(e.target.checked)
+								}
+							/>
 							Afficher les coordonnées
 						</label>
 
@@ -354,7 +416,9 @@ const Home = () => {
 										name='sortOrder'
 										value='lowToHigh'
 										checked={sortOrder === "lowToHigh"}
-										onChange={() => setSortOrder("lowToHigh")}
+										onChange={() =>
+											setSortOrder("lowToHigh")
+										}
 									/>
 									Croissant
 								</label>
@@ -364,7 +428,9 @@ const Home = () => {
 										name='sortOrder'
 										value='highToLow'
 										checked={sortOrder === "highToLow"}
-										onChange={() => setSortOrder("highToLow")}
+										onChange={() =>
+											setSortOrder("highToLow")
+										}
 									/>
 									Décroissant
 								</label>
@@ -381,7 +447,10 @@ const Home = () => {
 							</div>
 						</label>
 
-						<div ref={puzzleAppendingBoxRef} className='puzzle-appending-box'></div>
+						<div
+							ref={puzzleAppendingBoxRef}
+							className='puzzle-appending-box'
+						></div>
 
 						<button id='generate-puzzle-btn' type='submit'>
 							Générer les problèmes
@@ -397,13 +466,20 @@ const Home = () => {
 									display: "none",
 								}}
 							>
-								<ChessboardComponent fen={puzzle.fen} id={`board-${puzzle.puzzleId}`} />
+								<ChessboardComponent
+									fen={puzzle.fen}
+									id={`board-${puzzle.puzzleId}`}
+								/>
 							</div>
 						))}
 					</div>
 					{pdfUrl && (
 						<p style={{ marginTop: "15px" }}>
-							<a href={pdfUrl} target='_blank' rel='noopener noreferrer'>
+							<a
+								href={pdfUrl}
+								target='_blank'
+								rel='noopener noreferrer'
+							>
 								📄 Cliquez ici si le PDF ne s’est pas ouvert
 							</a>
 						</p>

@@ -3,83 +3,95 @@ require_once '../repositories/PuzzleRepository.php';
 
 class PuzzleService {
     private $puzzleRepository;
+    private $themeDefinitions;
+    private $themeTranslations = [
+        "Pion avancé" => "advancedPawn",
+        "Avantage" => "advantage",
+        "Mat arabe" => "arabianMate",
+        "Attaque sur f2 f7" => "attackingF2F7",
+        "Attraction" => "attraction",
+        "Mat sur la dernière rangée" => "backRankMate",
+        "Finale de fou" => "bishopEndgame",
+        "Mat de Boden" => "bodenMate",
+        "Prise du défenseur" => "capturingDefender",
+        "Découverte" => "clearance",
+        "Écrasement" => "crushing",
+        "Défense" => "defensiveMove",
+        "Déviation" => "deflection",
+        "Attaque à la découverte" => "discoveredAttack",
+        "Mat avec deux fous" => "doubleBishopMate",
+        "Échec double" => "doubleCheck",
+        "En passant" => "enPassant",
+        "Finale" => "endgame",
+        "Égalité" => "equality",
+        "Roi exposé" => "exposedKing",
+        "Fourchette" => "fork",
+        "Pièce en prise" => "hangingPiece",
+        "Mat du crochet" => "hookMate",
+        "Interférence" => "interference",
+        "Intermezzo" => "intermezzo",
+        "Attaque sur l'aile roi" => "kingsideAttack",
+        "Finale de cavalier" => "knightEndgame",
+        "Problème long" => "long",
+        "Maître" => "master",
+        "Maître contre maître" => "masterVsMaster",
+        "Mat" => "mate",
+        "Mat en 1" => "mateIn1",
+        "Mat en 2" => "mateIn2",
+        "Mat en 3" => "mateIn3",
+        "Mat en 4" => "mateIn4",
+        "Milieu de jeu" => "middlegame",
+        "Un coup" => "oneMove",
+        "Ouverture" => "opening",
+        "Finale de pions" => "pawnEndgame",
+        "Clouage" => "pin",
+        "Promotion" => "promotion",
+        "Finale de dames" => "queenEndgame",
+        "Finale de dames et tours" => "queenRookEndgame",
+        "Attaque sur l'aile dame" => "queensideAttack",
+        "Coup silencieux" => "quietMove",
+        "Finale de tours" => "rookEndgame",
+        "Sacrifice" => "sacrifice",
+        "Court" => "short",
+        "Enfilade" => "skewer",
+        "Mat à l'étouffé" => "smotheredMate",
+        "Super grand maître" => "superGM",
+        "Pièce enfermée" => "trappedPiece",
+        "Très long" => "veryLong",
+        "Rayon X" => "xRayAttack",
+        "Zugzwang" => "zugzwang"
+    ];
 
     public function __construct($db) {
         $this->puzzleRepository = new PuzzleRepository($db);
+        $this->themeDefinitions = require __DIR__ . '/../config/ThemeDefinitions.php';
     }
 
-    // Translation map for themes from French to English
-    private $themeTranslations = [
-        "pion avancé" => "advancedPawn",
-        "avantage" => "advantage",
-        "mat arabe" => "arabianMate",
-        "attaque F2F7" => "attackingF2F7",
-        "attraction" => "attraction",
-        "mat sur la dernière rangée" => "backRankMate",
-        "finale de fou" => "bishopEndgame",
-        "mat de Boden" => "bodenMate",
-        "prise du défenseur" => "capturingDefender",
-        "découverte" => "clearance",
-        "écrasement" => "crushing",
-        "défense" => "defensiveMove",
-        "déviation" => "deflection",
-        "attaque à la découverte" => "discoveredAttack",
-        "mat avec deux fous" => "doubleBishopMate",
-        "échec double" => "doubleCheck",
-        "en passant" => "enPassant",
-        "finale" => "endgame",
-        "égalité" => "equality",
-        "roi exposé" => "exposedKing",
-        "fourchette" => "fork",
-        "pièce en prise" => "hangingPiece",
-        "mat crochet" => "hookMate",
-        "interférence" => "interference",
-        "intermezzo" => "intermezzo",
-        "attaque aile roi" => "kingsideAttack",
-        "finale de cavalier" => "knightEndgame",
-        "problème long" => "long",
-        "maître" => "master",
-        "maître contre maître" => "masterVsMaster",
-        "mat" => "mate",
-        "mat en 1" => "mateIn1",
-        "mat en 2" => "mateIn2",
-        "mat en 3" => "mateIn3",
-        "mat en 4" => "mateIn4",
-        "milieu de jeu" => "middlegame",
-        "un coup" => "oneMove",
-        "ouverture" => "opening",
-        "finale de pions" => "pawnEndgame",
-        "clouage" => "pin",
-        "promotion" => "promotion",
-        "finale de dames" => "queenEndgame",
-        "finale de dames et tours" => "queenRookEndgame",
-        "attaque sur l'aile dame" => "queensideAttack",
-        "coup silencieux" => "quietMove",
-        "finale de tours" => "rookEndgame",
-        "sacrifice" => "sacrifice",
-        "court" => "short",
-        "enfilade" => "skewer",
-        "mat à l'étouffé" => "smotheredMate",
-        "super grand maître" => "superGM",
-        "pièce enfermée" => "trappedPiece",
-        "très long" => "veryLong",
-        "rayon X" => "xRayAttack",
-        "zugzwang" => "zugzwang"
-    ];
-
     public function getRandomPuzzles($themes, $minRating, $maxRating, $count) {
-        // Translate each theme if it's provided
+        // Traduire les thèmes
         if (is_array($themes)) {
             $translatedThemes = array_map(function($theme) {
                 return $this->themeTranslations[$theme] ?? null;
             }, $themes);
-            $translatedThemes = array_filter($translatedThemes); // Remove null values
+            $translatedThemes = array_filter($translatedThemes);
         } else {
             $translatedThemes = null;
         }
-    
-        // Call the repository to fetch puzzles with multiple themes
-        return $this->puzzleRepository->findRandomPuzzles($translatedThemes, $minRating, $maxRating, $count);
+
+        // Récupérer les puzzles
+        $puzzles = $this->puzzleRepository->findRandomPuzzles($translatedThemes, $minRating, $maxRating, $count);
+
+        // Ajouter les définitions pour les thèmes demandés
+        $themesInfo = [];
+        foreach ($translatedThemes as $key) {
+            if (isset($this->themeDefinitions[$key])) {
+                $themesInfo[$key] = $this->themeDefinitions[$key];
+            }
+        }
+
+        return [
+            'puzzles' => $puzzles,
+            'themes' => $themesInfo
+        ];
     }
-    
 }

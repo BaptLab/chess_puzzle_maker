@@ -8,7 +8,9 @@ export const generatePuzzlesPdf = async (
 	theme: string,
 	puzzleAppendingBox: HTMLElement | null,
 	displayRating: boolean, // Parameter for displaying rating
-	displayCoordinates: boolean // Parameter for displaying coordinates
+	displayCoordinates: boolean, // Parameter for displaying coordinates
+	displayDefinitions: boolean, // Parameter for displaying definitions
+	themeDefinitions: Record<string, { fr: string; definition: string }>
 ) => {
 	if (!puzzleAppendingBox) return;
 
@@ -32,7 +34,23 @@ export const generatePuzzlesPdf = async (
 		const titleX = (pageWidth - pdf.getTextWidth(title)) / 2;
 		pdf.text(title, titleX, 15);
 
-		const puzzlesOnPage = puzzles.slice(pageIndex * maxProblemsPerPage, pageIndex * maxProblemsPerPage + maxProblemsPerPage);
+		if (displayDefinitions && pageIndex === 0) {
+			pdf.setFontSize(10);
+			let defY = 25; // Ligne de départ sous le titre
+			const defX = 15;
+
+			Object.entries(themeDefinitions).forEach(([key, value]) => {
+				const line = `${value.fr} : ${value.definition}`;
+				const wrapped = pdf.splitTextToSize(line, pageWidth - 30);
+				pdf.text(wrapped, defX, defY);
+				defY += wrapped.length * 5 + 2; // Décaler la ligne suivante
+			});
+		}
+
+		const puzzlesOnPage = puzzles.slice(
+			pageIndex * maxProblemsPerPage,
+			pageIndex * maxProblemsPerPage + maxProblemsPerPage
+		);
 		const puzzlesPerRow = 3;
 
 		for (let i = 0; i < puzzlesOnPage.length; i++) {
@@ -48,7 +66,9 @@ export const generatePuzzlesPdf = async (
 			container.style.width = "200px";
 			container.style.height = "200px";
 			const chessboardElement = document.createElement("div");
-			chessboardElement.id = `chessboard-${i + pageIndex * maxProblemsPerPage}`;
+			chessboardElement.id = `chessboard-${
+				i + pageIndex * maxProblemsPerPage
+			}`;
 			container.appendChild(chessboardElement);
 			puzzleAppendingBox.appendChild(container);
 
@@ -83,12 +103,15 @@ export const generatePuzzlesPdf = async (
 					pdf.text(`Difficulté : ${puzzle.rating}`, x + 15, y + 60);
 				}
 
-				const whosToMove = puzzle.fen.split(" ")[1] === "w" ? "white" : "black";
+				const whosToMove =
+					puzzle.fen.split(" ")[1] === "w" ? "white" : "black";
 				const dotX = x + 55;
 				const dotY = y + 45;
 				pdf.setLineWidth(0.4);
 				pdf.setDrawColor(0, 0, 0);
-				pdf.setFillColor(whosToMove === "white" ? "#ffffff" : "#000000");
+				pdf.setFillColor(
+					whosToMove === "white" ? "#ffffff" : "#000000"
+				);
 				pdf.circle(dotX, dotY, 2, "FD");
 
 				// Conditionally display coordinates based on displayCoordinates parameter
@@ -127,7 +150,9 @@ export const generatePuzzlesPdf = async (
 	const maxLineWidth = pageWidth / 2 - 20; // Maximum width for wrapping text
 
 	puzzles.forEach((puzzle, index) => {
-		const solutionText = `${index + 1}. ${puzzle.solution || "No solution available"}`;
+		const solutionText = `${index + 1}. ${
+			puzzle.solution || "No solution available"
+		}`;
 
 		// Determine the x and y positions based on the index
 		const xPosition = index < columnLimit ? leftColumnX : rightColumnX;

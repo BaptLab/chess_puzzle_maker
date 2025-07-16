@@ -20,12 +20,17 @@ $count = $_GET['count'] ?? 5;
 
 try {
     // Fetch puzzles with multiple themes
-    $puzzles = $puzzleService->getRandomPuzzles($themes, $minRating, $maxRating, $count);
-    
-    echo json_encode([
-        'status' => 'success',
-        'data' => $puzzles
-    ]);
+// Nouveau : on récupère tout (puzzles + themes) en une seule variable
+$responseData = $puzzleService->getRandomPuzzles($themes, $minRating, $maxRating, $count);
+
+echo json_encode([
+    'status' => 'success',
+    'data' => [
+        'puzzles' => $responseData['puzzles'],
+        'themes'  => $responseData['themes']
+    ]
+]);
+
 } catch (Exception $e) {
     echo json_encode([
         'status' => 'error',
