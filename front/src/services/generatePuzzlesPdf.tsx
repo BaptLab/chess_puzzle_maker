@@ -7,9 +7,9 @@ export const generatePuzzlesPdf = async (
 	puzzles: Puzzle[],
 	theme: string,
 	puzzleAppendingBox: HTMLElement | null,
-	displayRating: boolean, // Parameter for displaying rating
-	displayCoordinates: boolean, // Parameter for displaying coordinates
-	displayDefinitions: boolean, // Parameter for displaying definitions
+	displayRating: boolean,
+	displayCoordinates: boolean,
+	displayDefinitions: boolean,
 	themeDefinitions: Record<string, { fr: string; definition: string }>
 ) => {
 	if (!puzzleAppendingBox) return;
@@ -17,7 +17,10 @@ export const generatePuzzlesPdf = async (
 	const pdf = new jsPDF("p", "mm", "a4");
 	const maxProblemsPerPage = 9;
 	const cellWidth = 65;
-	const cellHeight = 88;
+	// → On définit la hauteur normale et la hauteur réduite pour les problèmes
+	const defaultCellHeight = 88;
+	const reducedCellHeight = 80;
+
 	const startX = 15;
 	const startY = 40;
 	const pageWidth = pdf.internal.pageSize.getWidth();
@@ -27,6 +30,9 @@ export const generatePuzzlesPdf = async (
 	const leftCoordinates = ["8", "7", "6", "5", "4", "3", "2", "1"];
 	const bottomCoordinates = ["a", "b", "c", "d", "e", "f", "g", "h"];
 
+	// → Nombre de thèmes reçus
+	const defsCount = Object.keys(themeDefinitions).length;
+
 	for (let pageIndex = 0; pageIndex < totalPages; pageIndex++) {
 		const currentPage = pageIndex + 1;
 		pdf.setFontSize(16);
@@ -34,19 +40,27 @@ export const generatePuzzlesPdf = async (
 		const titleX = (pageWidth - pdf.getTextWidth(title)) / 2;
 		pdf.text(title, titleX, 15);
 
+		// Définitions inchangées (espacement d'origine)
 		if (displayDefinitions && pageIndex === 0) {
 			pdf.setFontSize(10);
-			let defY = 25; // Ligne de départ sous le titre
+			let defY = 25;
 			const defX = 15;
-
 			Object.values(themeDefinitions).forEach((value) => {
 				const line = `${value.fr} : ${value.definition}`;
 				const wrapped = pdf.splitTextToSize(line, pageWidth - 30);
 				pdf.text(wrapped, defX, defY);
-				defY += wrapped.length * 3 + 2; // Décaler la ligne suivante
+				// Espacement d'origine entre définitions
+				defY += wrapped.length * 3 + 2;
 			});
 		}
 
+		// → Choix de la hauteur verticale des cases
+		const useReducedHeight = pageIndex === 0 && defsCount >= 4;
+		const cellHeight = useReducedHeight
+			? reducedCellHeight
+			: defaultCellHeight;
+
+		// Dessin des diagrammes
 		const puzzlesOnPage = puzzles.slice(
 			pageIndex * maxProblemsPerPage,
 			pageIndex * maxProblemsPerPage + maxProblemsPerPage
@@ -58,7 +72,7 @@ export const generatePuzzlesPdf = async (
 			const row = Math.floor(i / puzzlesPerRow);
 			const col = i % puzzlesPerRow;
 			const x = startX + col * cellWidth;
-			const y = startY + row * cellHeight;
+			const y = startY + row * cellHeight; // ← on utilise la hauteur conditionnelle
 			const puzzleNumber = pageIndex * maxProblemsPerPage + i + 1;
 
 			puzzleAppendingBox.innerHTML = "";
@@ -82,87 +96,77 @@ export const generatePuzzlesPdf = async (
 
 			await new Promise((resolve) => setTimeout(resolve, 100));
 
-			await html2canvas(container, {
-				useCORS: true,
-				scale: 2,
-			}).then((canvas) => {
-				const imgData = canvas.toDataURL("image/png");
-				pdf.addImage(imgData, "PNG", x, y, 50, 50);
+			await html2canvas(container, { useCORS: true, scale: 2 }).then(
+				(canvas) => {
+					const imgData = canvas.toDataURL("image/png");
+					pdf.addImage(imgData, "PNG", x, y, 50, 50);
 
-				// Display puzzle number on the right and bold
-				pdf.setFontSize(10);
-				pdf.setFont("helvetica", "bold");
-				pdf.text(`${puzzleNumber}`, x + 54, y + 4);
-
-				// Reset font to normal before rendering other elements
-				pdf.setFont("helvetica", "normal");
-
-				// Conditionally display rating based on displayRating parameter
-				if (displayRating) {
 					pdf.setFontSize(10);
-					pdf.text(`Difficulté : ${puzzle.rating}`, x + 15, y + 60);
-				}
+					pdf.setFont("helvetica", "bold");
+					pdf.text(`${puzzleNumber}`, x + 54, y + 4);
+					pdf.setFont("helvetica", "normal");
 
-				const whosToMove =
-					puzzle.fen.split(" ")[1] === "w" ? "white" : "black";
-				const dotX = x + 55;
-				const dotY = y + 45;
-				pdf.setLineWidth(0.4);
-				pdf.setDrawColor(0, 0, 0);
-				pdf.setFillColor(
-					whosToMove === "white" ? "#ffffff" : "#000000"
-				);
-				pdf.circle(dotX, dotY, 2, "FD");
+					if (displayRating) {
+						pdf.setFontSize(10);
+						pdf.text(
+							`Difficulté : ${puzzle.rating}`,
+							x + 15,
+							y + 60
+						);
+					}
 
-				// Conditionally display coordinates based on displayCoordinates parameter
-				if (displayCoordinates) {
-					pdf.setFontSize(8);
-					leftCoordinates.forEach((num, index) => {
-						pdf.text(num, x - 5, y + 5 + index * 6.1);
-					});
-					bottomCoordinates.forEach((letter, index) => {
-						pdf.text(letter, x + 3 + index * 6.1, y + 54);
-					});
+					const whosToMove =
+						puzzle.fen.split(" ")[1] === "w" ? "white" : "black";
+					const dotX = x + 55;
+					const dotY = y + 45;
+					pdf.setLineWidth(0.4);
+					pdf.setDrawColor(0, 0, 0);
+					pdf.setFillColor(
+						whosToMove === "white" ? "#ffffff" : "#000000"
+					);
+					pdf.circle(dotX, dotY, 2, "FD");
+
+					if (displayCoordinates) {
+						pdf.setFontSize(8);
+						leftCoordinates.forEach((num, idx) => {
+							pdf.text(num, x - 5, y + 5 + idx * 6.1);
+						});
+						bottomCoordinates.forEach((ltr, idx) => {
+							pdf.text(ltr, x + 3 + idx * 6.1, y + 54);
+						});
+					}
 				}
-			});
+			);
 
 			chessboard.clear();
 			puzzleAppendingBox.removeChild(container);
 		}
 
+		// Pagination
 		pdf.setFontSize(10);
 		const pageNumber = `${currentPage}/${totalPages}`;
 		pdf.text(pageNumber, pageWidth - 20, pageHeight - 10);
-
 		if (currentPage < totalPages) pdf.addPage();
 	}
 
-	// Add a new page for solutions
+	// Page des solutions (inchangée)
 	pdf.addPage();
 	pdf.setFontSize(16);
 	pdf.text("Solutions", pageWidth / 2 - 10, 15);
-
 	pdf.setFontSize(12);
-	const columnLimit = 22; // Switch to the right column after 25 solutions
-	const lineHeight = 12; // Increase line height for more vertical spacing
-	const leftColumnX = 15; // X position for the left column
-	const rightColumnX = pageWidth / 2 + 10; // X position for the right column
-	const maxLineWidth = pageWidth / 2 - 20; // Maximum width for wrapping text
 
-	puzzles.forEach((puzzle, index) => {
-		const solutionText = `${index + 1}. ${
-			puzzle.solution || "No solution available"
-		}`;
+	const columnLimit = 22;
+	const lineHeight = 12;
+	const leftColumnX = 15;
+	const rightColumnX = pageWidth / 2 + 10;
+	const maxLineWidth = pageWidth / 2 - 20;
 
-		// Determine the x and y positions based on the index
-		const xPosition = index < columnLimit ? leftColumnX : rightColumnX;
-		const yPosition = 30 + (index % columnLimit) * lineHeight;
-
-		// Split text to wrap within the max line width
-		const wrappedText = pdf.splitTextToSize(solutionText, maxLineWidth);
-
-		// Render the wrapped text
-		pdf.text(wrappedText, xPosition, yPosition);
+	puzzles.forEach((p, idx) => {
+		const sol = `${idx + 1}. ${p.solution || "No solution available"}`;
+		const xPos = idx < columnLimit ? leftColumnX : rightColumnX;
+		const yPos = 30 + (idx % columnLimit) * lineHeight;
+		const wrapped = pdf.splitTextToSize(sol, maxLineWidth);
+		pdf.text(wrapped, xPos, yPos);
 	});
 
 	return pdf.output("bloburl").toString();
