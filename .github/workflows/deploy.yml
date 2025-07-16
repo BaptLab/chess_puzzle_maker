@@ -42,7 +42,6 @@ jobs:
                   password: ${{ secrets.FTP_PASSWORD }}
                   local-dir: ./front/out/
                   server-dir: ./www/chess_puzzle_maker/
-                  dangerous-clean-slate: true # 🔥 Supprime tout avant upload
 
             # Upload backend PHP files
             - name: Upload Backend PHP
@@ -53,5 +52,3 @@ jobs:
                   password: ${{ secrets.FTP_PASSWORD }}
                   local-dir: ./back_php/
                   server-dir: ./www/chess_puzzle_maker/back_php/
-                  dangerous-clean-slate: true # 🔥 Supprime tout avant upload
-
