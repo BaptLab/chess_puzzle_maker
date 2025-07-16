@@ -17,12 +17,12 @@ export const generatePuzzlesPdf = async (
 	const pdf = new jsPDF("p", "mm", "a4");
 	const maxProblemsPerPage = 9;
 	const cellWidth = 65;
-	// → On définit la hauteur normale et la hauteur réduite pour les problèmes
 	const defaultCellHeight = 88;
-	const reducedCellHeight = 75;
+	const reducedCellHeight = 78;
+	const definitionsOffset = 10; // marge après définitions
 
 	const startX = 15;
-	const startY = 40;
+	const defaultStartY = 40;
 	const pageWidth = pdf.internal.pageSize.getWidth();
 	const pageHeight = pdf.internal.pageSize.getHeight();
 	const totalPages = Math.ceil(puzzles.length / maxProblemsPerPage);
@@ -30,7 +30,7 @@ export const generatePuzzlesPdf = async (
 	const leftCoordinates = ["8", "7", "6", "5", "4", "3", "2", "1"];
 	const bottomCoordinates = ["a", "b", "c", "d", "e", "f", "g", "h"];
 
-	// → Nombre de thèmes reçus
+	// Nombre de thèmes
 	const defsCount = Object.keys(themeDefinitions).length;
 
 	for (let pageIndex = 0; pageIndex < totalPages; pageIndex++) {
@@ -40,7 +40,8 @@ export const generatePuzzlesPdf = async (
 		const titleX = (pageWidth - pdf.getTextWidth(title)) / 2;
 		pdf.text(title, titleX, 15);
 
-		// Définitions inchangées (espacement d'origine)
+		// ► Affichage des définitions (page 1)
+		let defYEnd = 0;
 		if (displayDefinitions && pageIndex === 0) {
 			pdf.setFontSize(10);
 			let defY = 25;
@@ -49,18 +50,24 @@ export const generatePuzzlesPdf = async (
 				const line = `${value.fr} : ${value.definition}`;
 				const wrapped = pdf.splitTextToSize(line, pageWidth - 30);
 				pdf.text(wrapped, defX, defY);
-				// Espacement d'origine entre définitions
 				defY += wrapped.length * 3 + 2;
 			});
+			defYEnd = defY;
 		}
 
-		// → Choix de la hauteur verticale des cases
+		// ► Calcul du Y de départ des diagrammes
+		const puzzlesStartY =
+			pageIndex === 0 && displayDefinitions
+				? defYEnd + definitionsOffset
+				: defaultStartY;
+
+		// ► Choix de la hauteur de ligne
 		const useReducedHeight = pageIndex === 0 && defsCount >= 4;
 		const cellHeight = useReducedHeight
 			? reducedCellHeight
 			: defaultCellHeight;
 
-		// Dessin des diagrammes
+		// ► Dessin des diagrammes
 		const puzzlesOnPage = puzzles.slice(
 			pageIndex * maxProblemsPerPage,
 			pageIndex * maxProblemsPerPage + maxProblemsPerPage
@@ -72,9 +79,10 @@ export const generatePuzzlesPdf = async (
 			const row = Math.floor(i / puzzlesPerRow);
 			const col = i % puzzlesPerRow;
 			const x = startX + col * cellWidth;
-			const y = startY + row * cellHeight; // ← on utilise la hauteur conditionnelle
+			const y = puzzlesStartY + row * cellHeight;
 			const puzzleNumber = pageIndex * maxProblemsPerPage + i + 1;
 
+			// Génération du container pour html2canvas
 			puzzleAppendingBox.innerHTML = "";
 			const container = document.createElement("div");
 			container.style.width = "200px";
@@ -94,18 +102,20 @@ export const generatePuzzlesPdf = async (
 			});
 			chessboard.setPosition(puzzle.fen);
 
-			await new Promise((resolve) => setTimeout(resolve, 100));
+			await new Promise((res) => setTimeout(res, 100));
 
 			await html2canvas(container, { useCORS: true, scale: 2 }).then(
 				(canvas) => {
 					const imgData = canvas.toDataURL("image/png");
 					pdf.addImage(imgData, "PNG", x, y, 50, 50);
 
+					// Numéro
 					pdf.setFontSize(10);
 					pdf.setFont("helvetica", "bold");
 					pdf.text(`${puzzleNumber}`, x + 54, y + 4);
 					pdf.setFont("helvetica", "normal");
 
+					// Difficulté
 					if (displayRating) {
 						pdf.setFontSize(10);
 						pdf.text(
@@ -115,6 +125,7 @@ export const generatePuzzlesPdf = async (
 						);
 					}
 
+					// Qui joue
 					const whosToMove =
 						puzzle.fen.split(" ")[1] === "w" ? "white" : "black";
 					const dotX = x + 55;
@@ -126,6 +137,7 @@ export const generatePuzzlesPdf = async (
 					);
 					pdf.circle(dotX, dotY, 2, "FD");
 
+					// Coordonnées
 					if (displayCoordinates) {
 						pdf.setFontSize(8);
 						leftCoordinates.forEach((num, idx) => {
@@ -142,14 +154,17 @@ export const generatePuzzlesPdf = async (
 			puzzleAppendingBox.removeChild(container);
 		}
 
-		// Pagination
+		// ► Pagination
 		pdf.setFontSize(10);
-		const pageNumber = `${currentPage}/${totalPages}`;
-		pdf.text(pageNumber, pageWidth - 20, pageHeight - 10);
+		pdf.text(
+			`${currentPage}/${totalPages}`,
+			pageWidth - 20,
+			pageHeight - 10
+		);
 		if (currentPage < totalPages) pdf.addPage();
 	}
 
-	// Page des solutions (inchangée)
+	// ► Page des solutions
 	pdf.addPage();
 	pdf.setFontSize(16);
 	pdf.text("Solutions", pageWidth / 2 - 10, 15);
