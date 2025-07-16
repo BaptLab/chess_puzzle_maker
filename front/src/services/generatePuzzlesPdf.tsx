@@ -19,7 +19,7 @@ export const generatePuzzlesPdf = async (
 	const cellWidth = 65;
 	// → On définit la hauteur normale et la hauteur réduite pour les problèmes
 	const defaultCellHeight = 88;
-	const reducedCellHeight = 80;
+	const reducedCellHeight = 75;
 
 	const startX = 15;
 	const startY = 40;
