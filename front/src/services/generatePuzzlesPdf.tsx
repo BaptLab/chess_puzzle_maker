@@ -38,7 +38,10 @@ export const generatePuzzlesPdf = async (
 		pdf.setFontSize(16);
 		const title = `Diagrammes à thème : ${theme || "Divers"}`;
 		const titleX = (pageWidth - pdf.getTextWidth(title)) / 2;
+		const advertising =
+			"Ces diagrammes ont été générés gratuitement sur https://chesspuzzlemaker.com";
 		pdf.text(title, titleX, 15);
+		pdf.text(advertising, 0, pageHeight - 10);
 
 		// ► Affichage des définitions (page 1)
 		let defYEnd = 0;
