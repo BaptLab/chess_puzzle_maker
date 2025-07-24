@@ -38,6 +38,7 @@ export const generatePuzzlesPdf = async (
 		pdf.setFontSize(16);
 		const title = `Diagrammes à thème : ${theme || "Divers"}`;
 		const titleX = (pageWidth - pdf.getTextWidth(title)) / 2;
+		pdf.setFontSize(8); // ⇦ ici tu changes la taille juste pour la pub
 		const advertising =
 			"Ces diagrammes ont été générés gratuitement sur https://chesspuzzlemaker.com";
 		pdf.text(title, titleX, 15);
